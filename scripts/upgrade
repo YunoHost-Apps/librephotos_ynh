@@ -12,7 +12,7 @@ source /usr/share/yunohost/helpers
 #=================================================
 # LOAD SETTINGS
 #=================================================
-ynh_script_progression --message="Loading installation settings..." --time --weight=1
+ynh_script_progression --message="Loading installation settings..." --weight=1
 
 app=$YNH_APP_INSTANCE_NAME
 
@@ -22,66 +22,24 @@ admin=$(ynh_app_setting_get --app=$app --key=admin)
 final_path=$(ynh_app_setting_get --app=$app --key=final_path)
 language=$(ynh_app_setting_get --app=$app --key=language)
 db_name=$(ynh_app_setting_get --app=$app --key=db_name)
+db_user=$db_name
+db_pwd=$(ynh_app_setting_get --app=$app --key=psqlpwd)
+port=$(ynh_app_setting_get --app=$app --key=port)
+backend_port=$(ynh_app_setting_get --app=$app --key=backend_port)
+similarity_port=$(ynh_app_setting_get --app=$app --key=similarity_port)
+data_path=$(ynh_app_setting_get --app=$app --key=data_path)
+allow_multimedia_write=$(ynh_app_setting_get --app=$app --key=allow_multimedia_write)
 
 #=================================================
 # CHECK VERSION
 #=================================================
 
-### This helper will compare the version of the currently installed app and the version of the upstream package.
-### $upgrade_type can have 2 different values
-### - UPGRADE_APP if the upstream app version has changed
-### - UPGRADE_PACKAGE if only the YunoHost package has changed
-### ynh_check_app_version_changed will stop the upgrade if the app is up to date.
-### UPGRADE_APP should be used to upgrade the core app only if there's an upgrade to do.
 upgrade_type=$(ynh_check_app_version_changed)
-
-#=================================================
-# ENSURE DOWNWARD COMPATIBILITY
-#=================================================
-ynh_script_progression --message="Ensuring downward compatibility..." --time --weight=1
-
-#
-# N.B. : the followings setting migrations snippets are provided as *EXAMPLES*
-# of what you may want to do in some cases (e.g. a setting was not defined on
-# some legacy installs and you therefore want to initiaze stuff during upgrade)
-#
-
-# If db_name doesn't exist, create it
-#if [ -z "$db_name" ]; then
-#	db_name=$(ynh_sanitize_dbid --db_name=$app)
-#	ynh_app_setting_set --app=$app --key=db_name --value=$db_name
-#fi
-
-# If final_path doesn't exist, create it
-#if [ -z "$final_path" ]; then
-#	final_path=/var/www/$app
-#	ynh_app_setting_set --app=$app --key=final_path --value=$final_path
-#fi
-
-### If nobody installed your app before 4.1,
-### then you may safely remove these lines
-
-# Cleaning legacy permissions
-if ynh_legacy_permissions_exists; then
-	ynh_legacy_permissions_delete_all
-
-	ynh_app_setting_delete --app=$app --key=is_public
-fi
-
-if ! ynh_permission_exists --permission="admin"; then
-	# Create the required permissions
-	ynh_permission_create --permission="admin" --url="/admin" --allowed=$admin
-fi
-
-# Create a permission if needed
-if ! ynh_permission_exists --permission="api"; then
-	ynh_permission_create --permission="api" --url "/api" --allowed="visitors" --show_tile="false" --protected="true"
-fi
 
 #=================================================
 # BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
 #=================================================
-ynh_script_progression --message="Backing up the app before upgrading (may take a while)..." --time --weight=1
+ynh_script_progression --message="Backing up the app before upgrading (may take a while)..." --weight=30
 
 # Backup the current version of the app
 ynh_backup_before_upgrade
@@ -97,9 +55,12 @@ ynh_abort_if_errors
 #=================================================
 # STOP SYSTEMD SERVICE
 #=================================================
-ynh_script_progression --message="Stopping a systemd service..." --time --weight=1
+ynh_script_progression --message="Stopping systemd services..." --weight=7
 
-ynh_systemd_action --service_name=$app --action="stop" --log_path="/var/log/$app/$app.log"
+ynh_systemd_action --service_name=$app-backend --action="stop" --log_path="/var/log/$app/gunicorn_django.log"
+ynh_systemd_action --service_name=$app-frontend --action="stop" --log_path="systemd"
+ynh_systemd_action --service_name=$app-image-similarity --action="stop" --log_path="/var/log/$app/image_similarity.log"
+ynh_systemd_action --service_name=$app-worker --action="stop" --log_path="/var/log/$app/$app-worker.log"
 
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
@@ -107,74 +68,141 @@ ynh_systemd_action --service_name=$app --action="stop" --log_path="/var/log/$app
 
 if [ "$upgrade_type" == "UPGRADE_APP" ]
 then
-	ynh_script_progression --message="Upgrading source files..." --time --weight=1
+	ynh_script_progression --message="Upgrading source files..." --weight=1
 
-	# Download, check integrity, uncompress and patch the source from app.src
-	ynh_setup_source --dest_dir="$final_path"
+	# Download, check integrity, uncompress and patch the sources
+	mkdir -p $final_path/data_models/{places365,im2txt}
+	ynh_setup_source --source_id="places365_model" --dest_dir="$final_path/data_models/places365/model/"
+	ynh_setup_source --source_id="im2txt_model" --dest_dir="$final_path/data_models/im2txt/model/"
+	ynh_setup_source --source_id="im2txt_data" --dest_dir="$final_path/data_models/im2txt/data/"
+	mkdir -p $data_path
+	ln -sf "$final_path/data_models" "$data_path/data_models"
+	mkdir -p $data_path/protected_media/{thumbnails_big,square_thumbnails,square_thumbnails_small,faces}
+	mkdir -p $data_path/data/nextcloud_media
+	mkdir -p $data_path/matplotlib
+
+	mkdir -p ~/.cache/torch/hub/checkpoints/
+	ynh_setup_source --source_id="resnet152-b121ed2d" --dest_dir="/root/.cache/torch/hub/checkpoints/"
+
+	ynh_setup_source --source_id="backend" --dest_dir="$final_path/backend/"
+	ynh_setup_source --source_id="frontend" --dest_dir="$final_path/frontend/"
+	ynh_setup_source --source_id="linux" --dest_dir="$final_path/linux/"
+	mkdir -p "$final_path/bin"
+	mv -f "$final_path/linux/ressources/bin/"* "$final_path/bin"
+	ynh_secure_remove --file="$final_path/linux"
+
+	mkdir -p /var/log/$app
 fi
 
 #=================================================
 # NGINX CONFIGURATION
 #=================================================
-ynh_script_progression --message="Upgrading NGINX web server configuration..." --time --weight=1
+ynh_script_progression --message="Upgrading NGINX web server configuration..." --weight=1
 
 # Create a dedicated NGINX config
-ynh_add_nginx_config
+ynh_add_nginx_config backend_port
 
 #=================================================
 # UPGRADE DEPENDENCIES
 #=================================================
-ynh_script_progression --message="Upgrading dependencies..." --time --weight=1
+ynh_script_progression --message="Upgrading dependencies..." --weight=1
 
 ynh_install_app_dependencies $pkg_dependencies
 
 #=================================================
 # CREATE DEDICATED USER
 #=================================================
-ynh_script_progression --message="Making sure dedicated system user exists..." --time --weight=1
+ynh_script_progression --message="Making sure dedicated system user exists..." --weight=1
 
 # Create a dedicated user (if not existing)
 ynh_system_user_create --username=$app
-
-#=================================================
-# PHP-FPM CONFIGURATION
-#=================================================
-ynh_script_progression --message="Upgrading PHP-FPM configuration..." --time --weight=1
-
-# Create a dedicated PHP-FPM config
-ynh_add_fpm_config
+usermod -d $data_path $app 2>&1
 
 #=================================================
 # SPECIFIC UPGRADE
 #=================================================
-# ...
+# SET UP VIRTUALENV
 #=================================================
+ynh_script_progression --message="Upgrading backend Python virtualenv..." --weight=50
+
+pushd $final_path/backend || ynh_die
+	python3 -m venv $final_path/backend/venv
+	source $final_path/backend/venv/bin/activate
+	python3 -m pip install -U wheel pip setuptools
+	python3 -m pip install -U torch==1.7.1+cpu torchvision==0.8.2+cpu -f https://download.pytorch.org/whl/torch_stable.html 2>&1
+	python3 -m pip install -U --install-option="--no" --install-option="DLIB_USE_CUDA" --install-option="--no" --install-option="USE_AVX_INSTRUCTIONS" --install-option="--no" --install-option="USE_SSE4_INSTRUCTIONS" dlib
+	python3 -m pip install -U --requirement $final_path/backend/requirements.txt
+	python3 -m pip install -U --requirement $final_path/backend/requirements-ynh.txt
+	python3 -m spacy download en_core_web_sm
+	deactivate 'dummy_arg'
+popd || ynh_die
+
+#=================================================
+# SET UP FRONTEND
+#=================================================
+ynh_script_progression --message="Setting up frontend..." --weight=5
+
+pushd $final_path/frontend || ynh_die
+	npm install npm@latest --quiet 2>&1
+	npx npm cache verify --quiet 2>&1
+	npx npm install --quiet 2>&1
+	npx npm install d3-zoom d3-force --quiet 2>&1
+	SKIP_PREFLIGHT_CHECK=true npx npm run build --quiet 2>&1
+	npx npm install serve --quiet 2>&1
+popd || ynh_die
 
 #=================================================
 # SETUP SYSTEMD
 #=================================================
-ynh_script_progression --message="Upgrading systemd configuration..." --time --weight=1
+ynh_script_progression --message="Upgrading systemd configurations..." --weight=1
 
-# Create a dedicated systemd config
-ynh_add_systemd_config
+# Create dedicated systemd configs
+ynh_add_systemd_config --service=$app-backend --template=backend.service
+ynh_add_systemd_config --service=$app-frontend --template=frontend.service
+ynh_add_systemd_config --service=$app-image-similarity --template=image-similarity.service
+ynh_add_systemd_config --service=$app-worker --template=worker.service
 
 #=================================================
-# UPDATE A CONFIG FILE
+# ADD CONFIGURATIONS
 #=================================================
+ynh_script_progression --message="Generating configuration files..." --weight=1
 
-### Same as during install
-###
-### The file will automatically be backed-up if it's found to be manually modified (because
-### ynh_add_config keeps track of the file's checksum)
+secret_key=$(ynh_string_random -l 64)
+ynh_add_config --template="librephotos.env" --destination="$final_path/librephotos.env"
 
-ynh_add_config --template="some_config_file" --destination="$final_path/some_config_file"
+for file in $final_path/bin/*; do
+	ynh_replace_string -m "/usr/lib/librephotos" -r "$final_path" -f $file
+	ynh_replace_string -m 3000 -r $port -f $file
+	ynh_replace_string -m 8001 -r $backend_port -f $file
+	ynh_replace_string -m 8002 -r $similarity_port -f $file
+	ynh_replace_string -m "/etc/librephotos" -r $final_path -f $file
+	ynh_replace_string -m "librephotos-backend.env" -r "librephotos.env" -f $file
+	ynh_replace_special_string -m 'su - -s $(which bash) librephotos << EOF' -r '' -f $file
+	ynh_replace_special_string -m 'EOF' -r '' -f $file
+	ynh_store_file_checksum --file="$file"
+done
 
-### For more complex cases where you want to replace stuff using regexes,
-### you shoud rely on ynh_replace_string (which is basically a wrapper for sed)
-### When doing so, you also need to manually call ynh_store_file_checksum
-###
-### ynh_replace_string --match_string="match_string" --replace_string="replace_string" --target_file="$final_path/some_config_file"
-### ynh_store_file_checksum --file="$final_path/some_config_file"
+#=================================================
+# FINALIZE DATABASE
+#=================================================
+ynh_script_progression --message="Finalizing database..." --weight=1
+
+pushd $final_path || ynh_die
+	python3 -m venv $final_path/backend/venv
+	source $final_path/backend/venv/bin/activate
+	$final_path/bin/librephotos-upgrade
+popd || ynh_die
+
+#=================================================
+# YUNOHOST MULTIMEDIA INTEGRATION
+#=================================================
+ynh_script_progression --message="Adding multimedia directories..." --weight=1
+
+# Build YunoHost multimedia directories
+ynh_multimedia_build_main_dir
+if [ $allow_multimedia_write -eq 1 ]; then
+	ynh_multimedia_addaccess $app
+fi
 
 #=================================================
 # GENERIC FINALIZATION
@@ -182,48 +210,57 @@ ynh_add_config --template="some_config_file" --destination="$final_path/some_con
 # SECURE FILES AND DIRECTORIES
 #=================================================
 
-# Set permissions on app files
-chown -R root: $final_path
+# Set permissions to app files
+chown -R root:$app $final_path
+chmod -R g+r,g-w,o-rwx $final_path
+chown -R $app:$app $data_path
+chmod -R g-w,o-rwx $data_path
+chown -R $app:$app $final_path/data_models
+chown -R $app:$app /var/log/$app
+chmod -R g-w,o-rwx /var/log/$app
+setfacl -n -m user:www-data:rx $data_path
+setfacl -n -R -m user:www-data:rx -m default:user:www-data:rx $data_path/protected_media $data_path/data $data_path/data/nextcloud_media
 
 #=================================================
 # SETUP LOGROTATE
 #=================================================
-ynh_script_progression --message="Upgrading logrotate configuration..." --time --weight=1
+ynh_script_progression --message="Upgrading logrotate configuration..." --weight=1
 
-# Use logrotate to manage app-specific logfile(s)
-ynh_use_logrotate --non-append
-
-#=================================================
-# INTEGRATE SERVICE IN YUNOHOST
-#=================================================
-ynh_script_progression --message="Integrating service in YunoHost..." --time --weight=1
-
-yunohost service add $app --description="A short description of the app" --log="/var/log/$app/$app.log"
+# Use logrotate to manage application logfiles
+ynh_use_logrotate --logfile="/var/log/$app/command_build_similarity_index.log" --specific_user="$app/$app"
+ynh_use_logrotate --logfile="/var/log/$app/gunicorn_django.log" --specific_user="$app/$app"
+ynh_use_logrotate --logfile="/var/log/$app/image_similarity.log" --specific_user="$app/$app"
+ynh_use_logrotate --logfile="/var/log/$app/ownphotos.log" --specific_user="$app/$app"
 
 #=================================================
-# START SYSTEMD SERVICE
+# INTEGRATE SERVICES IN YUNOHOST
 #=================================================
-ynh_script_progression --message="Starting a systemd service..." --time --weight=1
+ynh_script_progression --message="Integrating services in YunoHost..." --weight=1
 
-ynh_systemd_action --service_name=$app --action="start" --log_path="/var/log/$app/$app.log"
+yunohost service add $app-backend --description="Backend for librephotos" --log="/var/log/$app/$app-backend.log"
+yunohost service add $app-frontend --description="Frontend for librephotos" --log="/var/log/$app/$app-frontend.log"
+yunohost service add $app-image-similarity --description="Image similarity server for librephotos" --log="/var/log/$app/$app-image-similarity.log"
+yunohost service add $app-worker --description="Worker for librephotos" --log="/var/log/$app/$app-worker.log"
 
 #=================================================
-# UPGRADE FAIL2BAN
+# START SYSTEMD SERVICES
 #=================================================
-ynh_script_progression --message="Reconfiguring Fail2Ban..." --time --weight=1
+ynh_script_progression --message="Starting systemd services..." --weight=1
 
-# Create a dedicated Fail2Ban config
-ynh_add_fail2ban_config --logpath="/var/log/nginx/${domain}-error.log" --failregex="Regex to match into the log for a failed login"
+# Start systemd services
+ynh_systemd_action --service_name=$app-backend --action="start" --log_path="/var/log/$app/gunicorn_django.log" --line_match="Listening at: http"
+ynh_systemd_action --service_name=$app-frontend --action="start" --log_path="systemd" --line_match="INFO: Accepting connections at http:"
+ynh_systemd_action --service_name=$app-image-similarity --action="start" --log_path="/var/log/$app/image_similarity.log"
+ynh_systemd_action --service_name=$app-worker --action="start" --log_path="/var/log/$app/$app-worker.log"
 
 #=================================================
 # RELOAD NGINX
 #=================================================
-ynh_script_progression --message="Reloading NGINX web server..." --time --weight=1
+ynh_script_progression --message="Reloading NGINX web server..." --weight=1
 
 ynh_systemd_action --service_name=nginx --action=reload
 
 #=================================================
 # END OF SCRIPT
 #=================================================
-
-ynh_script_progression --message="Upgrade of $app completed" --time --last
+ynh_script_progression --message="Upgrade of $app completed" --last

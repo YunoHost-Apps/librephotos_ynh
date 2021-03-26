@@ -1,0 +1,16 @@
+[Unit]
+Description=librephotos-backend
+Documentation=https://github.com/LibrePhotos/librephotos
+
+After=network.target postgresql.service
+Requires=postgresql.service
+
+[Service]
+User=__APP__
+Group=__APP__ 
+EnvironmentFile=__FINALPATH__/librephotos.env
+ExecStart=/usr/bin/env bash -c "PATH=__FINALPATH__/backend/venv/bin:$PATH exec __FINALPATH__/bin/librephotos-worker"
+WorkingDirectory=__FINALPATH__/backend
+
+[Install]
+WantedBy=multi-user.target

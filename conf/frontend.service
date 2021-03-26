@@ -1,0 +1,13 @@
+[Unit]
+Description=librephotos-frontend
+Documentation=https://github.com/LibrePhotos/librephotos
+
+[Service]
+User=__APP__
+Group=__APP__ 
+EnvironmentFile=__FINALPATH__/librephotos.env
+ExecStart=__FINALPATH__/bin/librephotos-frontend
+WorkingDirectory=__FINALPATH__/frontend
+
+[Install]
+WantedBy=multi-user.target

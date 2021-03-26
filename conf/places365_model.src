@@ -1,0 +1,7 @@
+SOURCE_URL=https://s3.eu-central-1.amazonaws.com/ownphotos-deploy/places365_model.tar.gz
+SOURCE_SUM=2ded264e09efb6af4bf21c341edc359de60b646b7529d61428882a563b9dfad1
+SOURCE_SUM_PRG=sha256sum
+SOURCE_FORMAT=tar.gz
+SOURCE_IN_SUBDIR=true
+SOURCE_FILENAME=places365_model.tar.gz
+SOURCE_EXTRACT=true

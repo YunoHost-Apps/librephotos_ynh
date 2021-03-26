@@ -1,0 +1,7 @@
+SOURCE_URL=https://github.com/LibrePhotos/librephotos/tarball/ee2df6ea61ba139d428acdb0d44dc4ed897b308a
+SOURCE_SUM=bbb37f0577912fa6456e83ca1fa3b0eeacc682f2d5653f3f2a08021366235f10
+SOURCE_SUM_PRG=sha256sum
+SOURCE_FORMAT=tar.gz
+SOURCE_IN_SUBDIR=true
+SOURCE_FILENAME=ee2df6ea61ba139d428acdb0d44dc4ed897b308a
+SOURCE_EXTRACT=true

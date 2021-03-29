@@ -1,63 +1,55 @@
-# App exemple pour YunoHost
+# LibrePhotos pour YunoHost
 
-[![Niveau d'intégration](https://dash.yunohost.org/integration/REPLACEBYYOURAPP.svg)](https://dash.yunohost.org/appci/app/REPLACEBYYOURAPP) ![](https://ci-apps.yunohost.org/ci/badges/REPLACEBYYOURAPP.status.svg) ![](https://ci-apps.yunohost.org/ci/badges/REPLACEBYYOURAPP.maintain.svg)  
-[![Installer REPLACEBYYOURAPP avec YunoHost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=REPLACEBYYOURAPP)
+[![Niveau d'intégration](https://dash.yunohost.org/integration/librephotos.svg)](https://dash.yunohost.org/appci/app/librephotos) ![](https://ci-apps.yunohost.org/ci/badges/librephotos.status.svg) ![](https://ci-apps.yunohost.org/ci/badges/librephotos.maintain.svg)  
+[![Installer librephotos avec YunoHost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=librephotos)
 
 *[Read this readme in english.](./README.md)* 
 
-> *Ce package vous permet d'installer REPLACEBYYOURAPP rapidement et simplement sur un serveur YunoHost.  
+> *Ce package vous permet d'installer LibrePhotos rapidement et simplement sur un serveur YunoHost.  
 Si vous n'avez pas YunoHost, consultez [le guide](https://yunohost.org/#/install) pour apprendre comment l'installer.*
 
 ## Vue d'ensemble
-Description rapide de cette application.
+LibrePhotos est un sercice inspiré par Google Photos. Il prend en charge la classification des visages, le groupement des photos par date, la localisation géographique, ou objets présents, et la création d'albums.
 
-**Version incluse :** 1.0
+**Version incluse :** 2020-03-26
 
 ## Captures d'écran
 
-![](Lien vers une capture d'écran de cette application.)
+![](https://raw.githubusercontent.com/LibrePhotos/librephotos/dev/screenshots/mockups_main_fhd.png)
 
 ## Démo
 
-* [Démo officielle](Lien vers un site de démonstration de cette application.)
+* [Démo officielle](https://demo2.librephotos.com/) Utilisatuer `demo`, mot de passe `demo1234`
 
 ## Configuration
 
-Comment configurer cette application : via le panneau d'administration, un fichier brut en SSH ou tout autre moyen.
+Il y a un panneau d'administration à `https://votre-domaine.tld/admin`.
 
 ## Documentation
 
- * Documentation officielle : Lien vers la documentation officielle de cette application.
- * Documentation YunoHost : Si une documentation spécifique est nécessaire, n'hésitez pas à contribuer.
+ * Documentation officielle : https://github.com/LibrePhotos/librephotos
 
 ## Caractéristiques spécifiques YunoHost
+LDAP est pris charge. Le dossier de photos de chaque utilisateur est defini comme `/home/yunohost.multimedia/$username/Picture` par défaut.
 
 #### Support multi-utilisateur
 
-* L'authentification LDAP et HTTP est-elle prise en charge ?
-* L'application peut-elle être utilisée par plusieurs utilisateurs ?
+* L'authentification LDAP et HTTP est-elle prise en charge ? **Seulement LDAP**
+* L'application peut-elle être utilisée par plusieurs utilisateurs ? **Oui**
 
 #### Architectures supportées
 
-* x86-64 - [![Build Status](https://ci-apps.yunohost.org/ci/logs/REPLACEBYYOURAPP%20%28Apps%29.svg)](https://ci-apps.yunohost.org/ci/apps/REPLACEBYYOURAPP/)
-* ARMv8-A - [![Build Status](https://ci-apps-arm.yunohost.org/ci/logs/REPLACEBYYOURAPP%20%28Apps%29.svg)](https://ci-apps-arm.yunohost.org/ci/apps/REPLACEBYYOURAPP/)
+* x86-64 - [![Build Status](https://ci-apps.yunohost.org/ci/logs/librephotos%20%28Apps%29.svg)](https://ci-apps.yunohost.org/ci/apps/librephotos/)
+* ARMv8-A - [![Build Status](https://ci-apps-arm.yunohost.org/ci/logs/librephotos%20%28Apps%29.svg)](https://ci-apps-arm.yunohost.org/ci/apps/librephotos/)
 
 ## Limitations
 
-* Limitations connues.
-
-## Informations additionnelles
-
-* Autres informations que vous souhaitez ajouter sur cette application.
-
-**Plus d'informations sur la page de documentation :**  
-https://yunohost.org/packaging_apps
+* L'application d'origine n'a pas encore eu de version stable, il pourrait y avoir des bugs.
 
 ## Liens
 
- * Signaler un bug : https://github.com/YunoHost-Apps/REPLACEBYYOURAPP_ynh/issues
- * Site de l'application : Lien vers le site officiel de cette application.
- * Dépôt de l'application principale : Lien vers le dépôt officiel de l'application principale.
+ * Signaler un bug : https://github.com/YunoHost-Apps/librephotos_ynh/issues
+ * Dépôt de l'application principale : https://github.com/LibrePhotos/librephotos
  * Site web YunoHost : https://yunohost.org/
 
 ---
@@ -65,11 +57,11 @@ https://yunohost.org/packaging_apps
 ## Informations pour les développeurs
 
 **Seulement si vous voulez utiliser une branche de test pour le codage, au lieu de fusionner directement dans la banche principale.**
-Merci de faire vos pull request sur la [branche testing](https://github.com/YunoHost-Apps/REPLACEBYYOURAPP_ynh/tree/testing).
+Merci de faire vos pull request sur la [branche testing](https://github.com/YunoHost-Apps/librephotos_ynh/tree/testing).
 
 Pour essayer la branche testing, procédez comme suit.
 ```
-sudo yunohost app install https://github.com/YunoHost-Apps/REPLACEBYYOURAPP_ynh/tree/testing --debug
+sudo yunohost app install https://github.com/YunoHost-Apps/librephotos_ynh/tree/testing --debug
 ou
-sudo yunohost app upgrade REPLACEBYYOURAPP -u https://github.com/YunoHost-Apps/REPLACEBYYOURAPP_ynh/tree/testing --debug
+sudo yunohost app upgrade librephotos -u https://github.com/YunoHost-Apps/librephotos_ynh/tree/testing --debug
 ```

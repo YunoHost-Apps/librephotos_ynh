@@ -15,7 +15,6 @@ source /usr/share/yunohost/helpers
 #=================================================
 
 ynh_clean_setup () {
-	#### Remove this function if there's nothing to clean before calling the remove script.
 	true
 }
 # Exit if an error occurs during the execution of the script
@@ -24,7 +23,7 @@ ynh_abort_if_errors
 #=================================================
 # LOAD SETTINGS
 #=================================================
-ynh_script_progression --message="Loading installation settings..." --time --weight=1
+ynh_script_progression --message="Loading installation settings..." --weight=1
 
 app=$YNH_APP_INSTANCE_NAME
 
@@ -33,17 +32,26 @@ path_url=$(ynh_app_setting_get --app=$app --key=path)
 final_path=$(ynh_app_setting_get --app=$app --key=final_path)
 db_name=$(ynh_app_setting_get --app=$app --key=db_name)
 db_user=$db_name
-phpversion=$(ynh_app_setting_get --app=$app --key=phpversion)
+db_pwd=$(ynh_app_setting_get --app=$app --key=psqlpwd)
+data_path=$(ynh_app_setting_get --app=$app --key=data_path)
+allow_multimedia_write=$(ynh_app_setting_get --app=$app --key=allow_multimedia_write)
+port=$(ynh_app_setting_get --app=$app --key=port)
+backend_port=$(ynh_app_setting_get --app=$app --key=port)
+similarity_port=$(ynh_app_setting_get --app=$app --key=similarity_port)
+
 
 #=================================================
 # CHECK IF THE APP CAN BE RESTORED
 #=================================================
-ynh_script_progression --message="Validating restoration parameters..." --time --weight=1
+ynh_script_progression --message="Validating restoration parameters..." --weight=1
 
 ynh_webpath_available --domain=$domain --path_url=$path_url \
 	|| ynh_die --message="Path not available: ${domain}${path_url}"
 test ! -d $final_path \
 	|| ynh_die --message="There is already a directory: $final_path "
+
+test ! -d $data_path \
+	|| ynh_die --message="There is already a directory: $data_path "
 
 #=================================================
 # STANDARD RESTORATION STEPS
@@ -56,88 +64,35 @@ ynh_restore_file --origin_path="/etc/nginx/conf.d/$domain.d/$app.conf"
 #=================================================
 # RESTORE THE APP MAIN DIR
 #=================================================
-ynh_script_progression --message="Restoring the app main directory..." --time --weight=1
+ynh_script_progression --message="Restoring the app main directory..." --weight=1
 
 ynh_restore_file --origin_path="$final_path"
 
 #=================================================
+# RESTORE THE APP DATA DIR
+#=================================================
+ynh_script_progression --message="Restoring the app data directory..." --weight=1
+
+ynh_restore_file --origin_path="$data_path" --not_mandatory
+mkdir -p $data_path/protected_media/{thumbnails_big,square_thumbnails,square_thumbnails_small,faces}
+mkdir -p $data_path/data/nextcloud_media
+mkdir -p $data_path/matplotlib
+ln -s $final_path/data_models $data_path/data_models
+
+#=================================================
 # RECREATE THE DEDICATED USER
 #=================================================
-ynh_script_progression --message="Recreating the dedicated system user..." --time --weight=1
+ynh_script_progression --message="Recreating the dedicated system user..." --weight=1
 
 # Create the dedicated user (if not existing)
 ynh_system_user_create --username=$app
-
-#=================================================
-# RESTORE USER RIGHTS
-#=================================================
-
-# Restore permissions on app files
-chown -R root: $final_path
-
-#=================================================
-# RESTORE THE PHP-FPM CONFIGURATION
-#=================================================
-
-ynh_restore_file --origin_path="/etc/php/$phpversion/fpm/pool.d/$app.conf"
-
-#=================================================
-# RESTORE FAIL2BAN CONFIGURATION
-#=================================================
-ynh_script_progression --message="Restoring the Fail2Ban configuration..." --time --weight=1
-
-ynh_restore_file "/etc/fail2ban/jail.d/$app.conf"
-ynh_restore_file "/etc/fail2ban/filter.d/$app.conf"
-ynh_systemd_action --action=restart --service_name=fail2ban
-
-#=================================================
-# SPECIFIC RESTORATION
-#=================================================
-# REINSTALL DEPENDENCIES
-#=================================================
-ynh_script_progression --message="Reinstalling dependencies..." --time --weight=1
-
-# Define and install dependencies
-ynh_install_app_dependencies $pkg_dependencies
-
-#=================================================
-# RESTORE THE MYSQL DATABASE
-#=================================================
-ynh_script_progression --message="Restoring the MySQL database..." --time --weight=1
-
-db_pwd=$(ynh_app_setting_get --app=$app --key=mysqlpwd)
-ynh_mysql_setup_db --db_user=$db_user --db_name=$db_name --db_pwd=$db_pwd
-ynh_mysql_connect_as --user=$db_user --password=$db_pwd --database=$db_name < ./db.sql
-
-#=================================================
-# RESTORE SYSTEMD
-#=================================================
-ynh_script_progression --message="Restoring the systemd configuration..." --time --weight=1
-
-ynh_restore_file --origin_path="/etc/systemd/system/$app.service"
-systemctl enable $app.service --quiet
-
-#=================================================
-# INTEGRATE SERVICE IN YUNOHOST
-#=================================================
-ynh_script_progression --message="Integrating service in YunoHost..." --time --weight=1
-
-yunohost service add $app --description="A short description of the app" --log="/var/log/$app/$app.log"
-
-#=================================================
-# START SYSTEMD SERVICE
-#=================================================
-ynh_script_progression --message="Starting a systemd service..." --time --weight=1
-
-ynh_systemd_action --service_name=$app --action="start" --log_path="/var/log/$app/$app.log"
+usermod -d $data_path $app 2>&1
 
 #=================================================
 # RESTORE VARIOUS FILES
 #=================================================
 
-ynh_restore_file --origin_path="/etc/cron.d/$app"
-
-ynh_restore_file --origin_path="/etc/$app/"
+ynh_restore_file --origin_path="/var/log/$app"
 
 #=================================================
 # RESTORE THE LOGROTATE CONFIGURATION
@@ -146,17 +101,94 @@ ynh_restore_file --origin_path="/etc/$app/"
 ynh_restore_file --origin_path="/etc/logrotate.d/$app"
 
 #=================================================
+# REINSTALL DEPENDENCIES
+#=================================================
+ynh_script_progression --message="Reinstalling dependencies..." --weight=60
+
+# Define and install dependencies
+ynh_install_app_dependencies $pkg_dependencies
+
+#=================================================
+# RESTORE USER RIGHTS
+#=================================================
+
+# Restore permissions on app files
+chown -R root:$app $final_path
+chmod -R g+r,g-w,o-rwx $final_path
+chown -R $app:$app $data_path
+chmod -R g-w,o-rwx $data_path
+chown -R $app:$app $final_path/data_models
+chown -R $app:$app /var/log/$app
+chmod -R g-w,o-rwx /var/log/$app
+setfacl -n -m user:www-data:rx $data_path
+setfacl -n -R -m user:www-data:rx -m default:user:www-data:rx $data_path/protected_media $data_path/data $data_path/data/nextcloud_media
+
+#=================================================
+# SPECIFIC RESTORATION
+#=================================================
+# RESTORE THE POSTGRESQL DATABASE
+#=================================================
+ynh_script_progression --message="Restoring the PostgreSQL database..." --weight=2
+
+ynh_psql_test_if_first_run
+ynh_psql_setup_db --db_user=$db_user --db_name=$db_name --db_pwd=$db_pwd
+ynh_psql_connect_as --user=$db_user --password=$db_pwd --database=$db_name < ./db.sql
+
+#=================================================
+# RESTORE SYSTEMD
+#=================================================
+ynh_script_progression --message="Restoring the systemd configurations..." --weight=1
+
+ynh_restore_file --origin_path="/etc/systemd/system/$app-backend.service"
+systemctl enable $app-backend.service --quiet
+ynh_restore_file --origin_path="/etc/systemd/system/$app-frontend.service"
+systemctl enable $app-frontend.service --quiet
+ynh_restore_file --origin_path="/etc/systemd/system/$app-image-similarity.service"
+systemctl enable $app-image-similarity.service --quiet
+ynh_restore_file --origin_path="/etc/systemd/system/$app-worker.service"
+systemctl enable $app-worker.service --quiet
+
+#=================================================
+# INTEGRATE SERVICE IN YUNOHOST
+#=================================================
+ynh_script_progression --message="Integrating services in YunoHost..." --weight=1
+
+yunohost service add $app-backend --description="Backend for librephotos" --log="/var/log/$app/$app-backend.log"
+yunohost service add $app-frontend --description="Frontend for librephotos" --log="/var/log/$app/$app-frontend.log"
+yunohost service add $app-image-similarity --description="Image similarity server for librephotos" --log="/var/log/$app/$app-image-similarity.log"
+yunohost service add $app-worker --description="Worker for librephotos" --log="/var/log/$app/$app-worker.log"
+
+#=================================================
+# START SYSTEMD SERVICES
+#=================================================
+ynh_script_progression --message="Starting systemd services..." --weight=1
+
+ynh_systemd_action --service_name=$app-backend --action="start" --log_path="/var/log/$app/gunicorn_django.log" --line_match="Listening at: http"
+ynh_systemd_action --service_name=$app-frontend --action="start" --log_path="systemd" --line_match="INFO: Accepting connections at http:"
+ynh_systemd_action --service_name=$app-image-similarity --action="start" --log_path="/var/log/$app/image_similarity.log"
+ynh_systemd_action --service_name=$app-worker --action="start" --log_path="/var/log/$app/$app-worker.log"
+
+#=================================================
+# YUNOHOST MULTIMEDIA INTEGRATION
+#=================================================
+ynh_script_progression --message="Adding multimedia directories..." --weight=1
+
+# Build YunoHost multimedia directories
+ynh_multimedia_build_main_dir
+if [ $allow_multimedia_write -eq 1 ]; then
+	ynh_multimedia_addaccess $app
+fi
+
+#=================================================
 # GENERIC FINALIZATION
 #=================================================
-# RELOAD NGINX AND PHP-FPM
+# RELOAD NGINX
 #=================================================
-ynh_script_progression --message="Reloading NGINX web server and PHP-FPM..." --time --weight=1
+ynh_script_progression --message="Reloading NGINX web server..." --weight=1
 
-ynh_systemd_action --service_name=php$phpversion-fpm --action=reload
 ynh_systemd_action --service_name=nginx --action=reload
 
 #=================================================
 # END OF SCRIPT
 #=================================================
-
-ynh_script_progression --message="Restoration completed for $app" --time --last
+ynh_script_progression --message="Restoration completed for $app" --last

@@ -20,5 +20,5 @@ try:
         user.delete()
 except User.DoesNotExist:
     pass
-"
+" 2>&1
 popd

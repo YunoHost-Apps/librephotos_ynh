@@ -270,9 +270,9 @@ ynh_use_logrotate --logfile="/var/log/$app/ownphotos.log" --specific_user="$app/
 #=================================================
 ynh_script_progression --message="Integrating services in YunoHost..." --weight=1
 
-yunohost service add $app-backend --description="Backend for librephotos" --log="/var/log/$app/$app-backend.log"
+yunohost service add $app-backend --description="Backend for librephotos" --log="/var/log/$app/gunicorn_django.log"
 yunohost service add $app-frontend --description="Frontend for librephotos" --log="/var/log/$app/$app-frontend.log"
-yunohost service add $app-image-similarity --description="Image similarity server for librephotos" --log="/var/log/$app/$app-image-similarity.log"
+yunohost service add $app-image-similarity --description="Image similarity server for librephotos" --log="/var/log/$app/image_similarity.log"
 yunohost service add $app-worker --description="Worker for librephotos" --log="/var/log/$app/$app-worker.log"
 
 #=================================================

@@ -9,8 +9,7 @@ mail=$2
 final_path=$(ynh_app_setting_get --app=$app --key=final_path)
 
 pushd $final_path/backend
-	source $final_path/backend/venv/bin/activate
-	$final_path/bin/librephotos-cli shell <<< "
+	sudo -u $app $final_path/bin/librephotos-cli shell <<< "
 from django.contrib.auth import get_user_model
 User = get_user_model()
 try:

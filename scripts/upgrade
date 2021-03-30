@@ -192,7 +192,7 @@ done
 ynh_script_progression --message="Finalizing database..." --weight=1
 
 pushd $final_path || ynh_die
-	chown -R root:$app $final_path
+	chown -R $app:$app $final_path
 	sudo -u $app $final_path/bin/librephotos-upgrade
 	chown -R root:root $final_path
 popd || ynh_die

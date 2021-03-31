@@ -220,9 +220,9 @@ fi
 
 # Set permissions to app files
 chown -R root:$app $final_path
-chmod -R g+r,g-w,o-rwx $final_path
+chmod -R g=u,g-w,o-rwx $final_path
 chown -R $app:$app $data_path
-chmod -R g-w,o-rwx $data_path
+chmod -R g=u,g-w,o-rwx $data_path
 chown -R $app:$app $final_path/data_models
 chown -R $app:$app /var/log/$app
 chmod -R g-w,o-rwx /var/log/$app

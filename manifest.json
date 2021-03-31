@@ -7,7 +7,7 @@
         "fr": "Un gestionnaire de photos semblable à Google Photos"
     },
     "version": "0.0.20210329~ynh2",
-    "url": "https://example.com",
+    "url": "https://github.com/LibrePhotos/librephotos",
     "license": "MIT",
     "maintainer": {
         "name": "Jules Bertholet",

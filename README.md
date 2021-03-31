@@ -11,7 +11,7 @@ If you don't have YunoHost, please consult [the guide](https://yunohost.org/#/in
 ## Overview
 LibrePhotos is a Google Photos-like app. It supports automatic classification of faces, grouping photos by date, location, or objects present, and album creation.
 
-**Shipped version:** 2020-03-26
+**Shipped version:** 2020-03-29
 
 ## Screenshots
 
@@ -34,8 +34,8 @@ LDAP is supported. The scan directory of each user is automatically set to `/hom
 
 #### Multi-user support
 
-Are LDAP and HTTP auth supported? **LDAP only**
-Can the app be used by multiple users? **Yes**
+* Are LDAP and HTTP auth supported? **LDAP only**
+* Can the app be used by multiple users? **Yes**
 
 #### Supported architectures
 

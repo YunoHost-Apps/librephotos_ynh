@@ -140,16 +140,17 @@ usermod -d $data_path $app 2>&1
 #=================================================
 ynh_script_progression --message="Initializing backend Python virtualenv..." --weight=60
 
-pushd $final_path/backend || ynh_die
-	python3 -m venv $final_path/backend/venv
-	source $final_path/backend/venv/bin/activate
-	python3 -m pip install -U wheel pip setuptools
-	python3 -m pip install torch==1.7.1+cpu torchvision==0.8.2+cpu -f https://download.pytorch.org/whl/torch_stable.html 2>&1
-	python3 -m pip install --install-option="--no" --install-option="DLIB_USE_CUDA" --install-option="--no" --install-option="USE_AVX_INSTRUCTIONS" --install-option="--no" --install-option="USE_SSE4_INSTRUCTIONS" dlib
-	python3 -m pip install --requirement $final_path/backend/requirements.txt
-	python3 -m pip install --requirement $final_path/backend/requirements-ynh.txt
-	python3 -m spacy download en_core_web_sm
-	deactivate 'dummy_arg'
+backend_path=$final_path/backend
+pushd $backend_path || ynh_die
+	chown -R $app:$app $backend_path
+	sudo -u $app python3 -m venv $backend_path/venv
+	sudo -u $app $backend_path/venv/bin/pip --cache-dir $backend_path/.cache/pip install -U wheel pip setuptools 2>&1
+	sudo -u $app $backend_path/venv/bin/pip --cache-dir $backend_path/.cache/pip install -U torch==1.7.1+cpu torchvision==0.8.2+cpu -f https://download.pytorch.org/whl/torch_stable.html 2>&1
+	sudo -u $app $backend_path/venv/bin/pip --cache-dir $backend_path/.cache/pip install -U --install-option="--no" --install-option="DLIB_USE_CUDA" --install-option="--no" --install-option="USE_AVX_INSTRUCTIONS" --install-option="--no" --install-option="USE_SSE4_INSTRUCTIONS" dlib 2>&1
+	sudo -u $app $backend_path/venv/bin/pip --cache-dir $backend_path/.cache/pip install -U --requirement $backend_path/requirements.txt 2>&1
+	sudo -u $app $backend_path/venv/bin/pip --cache-dir $backend_path/.cache/pip install -U --requirement $backend_path/requirements-ynh.txt 2>&1
+	sudo -u $app $backend_path/venv/bin/python -m spacy download en_core_web_sm 2>&1
+	chown -R root:root $backend_path
 popd || ynh_die
 
 #=================================================
@@ -157,13 +158,14 @@ popd || ynh_die
 #=================================================
 ynh_script_progression --message="Setting up frontend..." --weight=5
 
+frontend_path=$final_path/frontend
 pushd $final_path/frontend || ynh_die
-	npm install npm@latest --quiet 2>&1
-	npx npm cache verify --quiet 2>&1
-	npx npm install --quiet 2>&1
-	npx npm install d3-zoom d3-force --quiet 2>&1
-	SKIP_PREFLIGHT_CHECK=true npx npm run build --quiet 2>&1
-	npx npm install serve --quiet 2>&1
+	chown -R $app:$app $frontend_path
+	sudo -u $app touch $frontend_path/.yarnrc
+	sudo -u $app yarnpkg --cache-folder $frontend_path/yarn-cache --use-yarnrc $frontend_path/.yarnrc install 2>&1
+	sudo -u $app yarnpkg --cache-folder $frontend_path/yarn-cache --use-yarnrc $frontend_path/.yarnrc run build 2>&1
+	sudo -u $app yarnpkg --cache-folder $frontend_path/yarn-cache --use-yarnrc $frontend_path/.yarnrc add serve 2>&1
+	chown -R root:root $frontend_path
 popd || ynh_die
 
 #=================================================
@@ -186,15 +188,20 @@ secret_key=$(ynh_string_random -l 64)
 ynh_add_config --template="librephotos.env" --destination="$final_path/librephotos.env"
 
 for file in $final_path/bin/*; do
+	ynh_replace_string -m '#!/usr/bin/env bash' -r "#!/usr/bin/env bash\nsource $final_path/librephotos.env" -f $file
+	echo "$(uniq $file)" > $file
 	ynh_replace_string -m "/usr/lib/librephotos" -r "$final_path" -f $file
-	ynh_replace_string -m 3000 -r $port -f $file
-	ynh_replace_string -m 8001 -r $backend_port -f $file
-	ynh_replace_string -m 8002 -r $similarity_port -f $file
+	ynh_replace_string -m 3000 -r '$httpPort' -f $file
+	ynh_replace_string -m 8001 -r '$BACKEND_PORT' -f $file
+	ynh_replace_string -m 8002 -r '$IMAGE_SIMILARITY_SERVER_PORT' -f $file
 	ynh_replace_string -m "/etc/librephotos" -r $final_path -f $file
 	ynh_replace_string -m "librephotos-backend.env" -r "librephotos.env" -f $file
 	ynh_replace_special_string -m 'su - -s $(which bash) librephotos << EOF' -r '' -f $file
 	ynh_replace_special_string -m 'EOF' -r '' -f $file
-	ynh_store_file_checksum --file="$file"
+	ynh_replace_string -m "python3" -r "$backend_path/venv/bin/python3" -f $file
+	ynh_replace_string -m "gunicorn --workers" -r "$backend_path/venv/bin/gunicorn --workers" -f $file
+	ynh_replace_string -m "$backend_path/venv/bin/$backend_path/venv/bin/python" -r "$backend_path/venv/bin/python" -f $file
+	ynh_replace_string -m "$backend_path/venv/bin/$backend_path/venv/bin/gunicorn --workers" -r "$backend_path/venv/bin/gunicorn --workers" -f $file
 done
 
 #=================================================
@@ -203,13 +210,13 @@ done
 ynh_script_progression --message="Finalizing database..." --weight=1
 
 pushd $final_path || ynh_die
-	python3 -m venv $final_path/backend/venv
-	source $final_path/backend/venv/bin/activate
-	$final_path/bin/librephotos-upgrade
-	$final_path/bin/librephotos-createadmin "$admin"  "$(ynh_user_get_info $admin 'mail')" $(ynh_string_random -l 64)
+	chown -R $app:$app $final_path
+	chown -R $app:$app /var/log/$app
+	sudo -u $app $final_path/bin/librephotos-upgrade 2>&1
+	sudo -u $app $final_path/bin/librephotos-createadmin "$admin"  "$(ynh_user_get_info $admin 'mail')" $(ynh_string_random -l 64) 2>&1
 	for username in $(ynh_user_list); do
 		user_email=$(ynh_user_get_info --username="$username" --key=mail)
-		$final_path/bin/librephotos-cli shell <<< "
+		sudo -u $app $final_path/bin/librephotos-cli shell <<< "
 from django.contrib.auth import get_user_model
 User = get_user_model()
 try:
@@ -218,8 +225,9 @@ try:
     user.save()
 except User.DoesNotExist:
     User.objects.create_user('$username', email='$user_email', scan_directory='/home/yunohost.multimedia/$username/Picture')
-"
+" 2>&1
 	done
+	chown -R root:root $final_path
 popd || ynh_die
 
 #=================================================
@@ -266,9 +274,9 @@ ynh_use_logrotate --logfile="/var/log/$app/ownphotos.log" --specific_user="$app/
 #=================================================
 ynh_script_progression --message="Integrating services in YunoHost..." --weight=1
 
-yunohost service add $app-backend --description="Backend for librephotos" --log="/var/log/$app/$app-backend.log"
+yunohost service add $app-backend --description="Backend for librephotos" --log="/var/log/$app/gunicorn_django.log"
 yunohost service add $app-frontend --description="Frontend for librephotos" --log="/var/log/$app/$app-frontend.log"
-yunohost service add $app-image-similarity --description="Image similarity server for librephotos" --log="/var/log/$app/$app-image-similarity.log"
+yunohost service add $app-image-similarity --description="Image similarity server for librephotos" --log="/var/log/$app/image_similarity.log"
 yunohost service add $app-worker --description="Worker for librephotos" --log="/var/log/$app/$app-worker.log"
 
 #=================================================

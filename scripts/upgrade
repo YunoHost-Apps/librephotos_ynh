@@ -144,13 +144,17 @@ popd || ynh_die
 #=================================================
 ynh_script_progression --message="Setting up frontend..." --weight=5
 
+ynh_exec_warn_less ynh_install_nodejs --nodejs_version=10
+ynh_use_nodejs
+node_PATH=$nodejs_path:$(sudo -u $app sh -c 'echo $PATH')
+
 frontend_path=$final_path/frontend
 pushd $final_path/frontend || ynh_die
 	chown -R $app:$app $frontend_path
 	sudo -u $app touch $frontend_path/.yarnrc
-	sudo -u $app yarnpkg --cache-folder $frontend_path/yarn-cache --use-yarnrc $frontend_path/.yarnrc install 2>&1
-	sudo -u $app yarnpkg --cache-folder $frontend_path/yarn-cache --use-yarnrc $frontend_path/.yarnrc run build 2>&1
-	sudo -u $app yarnpkg --cache-folder $frontend_path/yarn-cache --use-yarnrc $frontend_path/.yarnrc add serve 2>&1
+	sudo -u $app PATH=$node_PATH yarn --cache-folder $frontend_path/yarn-cache --use-yarnrc $frontend_path/.yarnrc install 2>&1
+	sudo -u $app PATH=$node_PATH yarn --cache-folder $frontend_path/yarn-cache --use-yarnrc $frontend_path/.yarnrc run build 2>&1
+	sudo -u $app PATH=$node_PATH yarn --cache-folder $frontend_path/yarn-cache --use-yarnrc $frontend_path/.yarnrc add serve 2>&1
 	chown -R root:root $frontend_path
 popd || ynh_die
 
@@ -176,6 +180,8 @@ ynh_add_config --template="librephotos.env" --destination="$final_path/librephot
 for file in $final_path/bin/*; do
 	ynh_replace_string -m '#!/usr/bin/env bash' -r "#!/usr/bin/env bash\nsource $final_path/librephotos.env" -f $file
 	echo "$(uniq $file)" > $file
+	ynh_replace_string -m "source $final_path/librephotos.env" -r "source $final_path/librephotos.env\nexport PATH=\$NODEJS_PATH:\$PATH" -f $file
+	echo "$(uniq $file)" > $file
 	ynh_replace_string -m "/usr/lib/librephotos" -r "$final_path" -f $file
 	ynh_replace_string -m 3000 -r '$httpPort' -f $file
 	ynh_replace_string -m 8001 -r '$BACKEND_PORT' -f $file
@@ -188,6 +194,8 @@ for file in $final_path/bin/*; do
 	ynh_replace_string -m "gunicorn --workers" -r "$backend_path/venv/bin/gunicorn --workers" -f $file
 	ynh_replace_string -m "$backend_path/venv/bin/$backend_path/venv/bin/python" -r "$backend_path/venv/bin/python" -f $file
 	ynh_replace_string -m "$backend_path/venv/bin/$backend_path/venv/bin/gunicorn --workers" -r "$backend_path/venv/bin/gunicorn --workers" -f $file
+	ynh_replace_string -m 'npm install' -r " " -f $file
+	ynh_replace_string -m 'npm' -r "yarn" -f $file
 done
 
 #=================================================

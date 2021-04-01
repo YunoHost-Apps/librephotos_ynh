@@ -99,6 +99,13 @@ ynh_script_progression --message="Removing logrotate configuration..." --weight=
 ynh_remove_logrotate
 
 #=================================================
+# REMOVE NODE
+#=================================================
+ynh_script_progression --message="Removing Node.js..." --weight=1
+
+ynh_remove_nodejs
+
+#=================================================
 # SPECIFIC REMOVE
 #=================================================
 # REMOVE VARIOUS FILES

@@ -1,7 +1,7 @@
-SOURCE_URL=https://github.com/LibrePhotos/librephotos-frontend/tarball/c9c19e8b27b7de487f130abd57aa8a2c059e1f62
-SOURCE_SUM=be91b4cfd0f5a5a8d5c2ccc95bac762a750ae1fa3dd59f93671ff00d2cabed79
+SOURCE_URL=https://github.com/LibrePhotos/librephotos-frontend/tarball/a49a51e21675e2de9823ac4f7df0af826e6a2842
+SOURCE_SUM=5f33e348e75bbbcb1e08dcf759260402c0abab301585a850247ad2599dd234bf
 SOURCE_SUM_PRG=sha256sum
 SOURCE_FORMAT=tar.gz
 SOURCE_IN_SUBDIR=true
-SOURCE_FILENAME=c9c19e8b27b7de487f130abd57aa8a2c059e1f62
+SOURCE_FILENAME=a49a51e21675e2de9823ac4f7df0af826e6a2842
 SOURCE_EXTRACT=true

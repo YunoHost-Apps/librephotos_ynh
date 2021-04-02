@@ -244,10 +244,10 @@ setfacl -n -R -m user:www-data:rx -m default:user:www-data:rx $data_path/protect
 ynh_script_progression --message="Upgrading logrotate configuration..." --weight=1
 
 # Use logrotate to manage application logfiles
-ynh_use_logrotate --logfile="/var/log/$app/command_build_similarity_index.log" --specific_user="$app/$app"
-ynh_use_logrotate --logfile="/var/log/$app/gunicorn_django.log" --specific_user="$app/$app"
-ynh_use_logrotate --logfile="/var/log/$app/image_similarity.log" --specific_user="$app/$app"
-ynh_use_logrotate --logfile="/var/log/$app/ownphotos.log" --specific_user="$app/$app"
+ynh_use_logrotate --logfile="/var/log/$app/command_build_similarity_index.log" --specific_user="$app/$app" --non-append
+ynh_use_logrotate --logfile="/var/log/$app/gunicorn_django.log" --specific_user="$app/$app" --non-append
+ynh_use_logrotate --logfile="/var/log/$app/image_similarity.log" --specific_user="$app/$app" --non-append
+ynh_use_logrotate --logfile="/var/log/$app/ownphotos.log" --specific_user="$app/$app" --non-append
 
 #=================================================
 # INTEGRATE SERVICES IN YUNOHOST

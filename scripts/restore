@@ -85,8 +85,7 @@ ln -s $final_path/data_models $data_path/data_models
 ynh_script_progression --message="Recreating the dedicated system user..." --weight=1
 
 # Create the dedicated user (if not existing)
-ynh_system_user_create --username=$app
-usermod -d $data_path $app 2>&1
+ynh_system_user_create --username=$app --home_dir=$data_path
 
 #=================================================
 # RESTORE VARIOUS FILES

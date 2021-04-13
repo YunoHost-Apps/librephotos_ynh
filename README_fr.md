@@ -11,7 +11,7 @@ Si vous n'avez pas YunoHost, consultez [le guide](https://yunohost.org/#/install
 ## Vue d'ensemble
 LibrePhotos est un sercice inspiré par Google Photos. Il prend en charge la classification des visages, le groupement des photos par date, la localisation géographique, ou objets présents, et la création d'albums.
 
-**Version incluse :** 2020-04-12
+**Version incluse :** 2020-04-13
 
 ## Captures d'écran
 

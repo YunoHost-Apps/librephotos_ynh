@@ -5,13 +5,13 @@
 
 *[Lire ce readme en français.](./README_fr.md)*
 
-> *This package allows you to install librephotos quickly and simply on a YunoHost server.  
+> *This package allows you to install LibrePhotos quickly and simply on a YunoHost server.  
 If you don't have YunoHost, please consult [the guide](https://yunohost.org/#/install) to learn how to install it.*
 
 ## Overview
 LibrePhotos is a Google Photos-like app. It supports automatic classification of faces, grouping photos by date, location, or objects present, and album creation.
 
-**Shipped version:** 2020-04-12
+**Shipped version:** 2020-04-13
 
 ## Screenshots
 
@@ -38,7 +38,6 @@ LDAP is supported. The scan directory of each user is automatically set to `/hom
 * Can the app be used by multiple users? **Yes**
 
 #### Supported architectures
-
 
 * x86-64 - [![Build Status](https://ci-apps.yunohost.org/ci/logs/librephotos%20%28Apps%29.svg)](https://ci-apps.yunohost.org/ci/apps/librephotos/)
 * ARMv8-A - [![Build Status](https://ci-apps-arm.yunohost.org/ci/logs/librephotos%20%28Apps%29.svg)](https://ci-apps-arm.yunohost.org/ci/apps/librephotos/)

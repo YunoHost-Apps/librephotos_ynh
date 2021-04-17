@@ -100,7 +100,7 @@ ynh_system_user_create --username=$app --home_dir=$data_path
 #=================================================
 # SET UP VIRTUALENV
 #=================================================
-ynh_script_progression --message="Upgradingynh_app_setting_setbackend Python virtualenv..." --weight=50
+ynh_script_progression --message="Upgrading Python virtualenv..." --weight=50
 
 set_up_virtualenv
 

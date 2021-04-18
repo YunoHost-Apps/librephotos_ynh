@@ -50,18 +50,22 @@ function set_up_virtualenv {
 	popd || ynh_die
 }
 
-function set_up_frontend {
+function set_node_vars {
 	ynh_exec_warn_less ynh_install_nodejs --nodejs_version=10
 	ynh_use_nodejs
 	node_PATH=$nodejs_path:$(sudo -u $app sh -c 'echo $PATH')
 
+}
+
+function set_up_frontend {
+	set_node_vars
 	frontend_path=$final_path/frontend
 	pushd $final_path/frontend || ynh_die
 		chown -R $app:$app $frontend_path
 		sudo -u $app touch $frontend_path/.yarnrc
-		sudo -u $app PATH=$node_PATH yarn --cache-folder $frontend_path/yarn-cache --use-yarnrc $frontend_path/.yarnrc install 2>&1
-		sudo -u $app PATH=$node_PATH yarn --cache-folder $frontend_path/yarn-cache --use-yarnrc $frontend_path/.yarnrc run build 2>&1
-		sudo -u $app PATH=$node_PATH yarn --cache-folder $frontend_path/yarn-cache --use-yarnrc $frontend_path/.yarnrc add serve 2>&1
+		sudo -u $app env "PATH=$node_PATH" yarn --cache-folder $frontend_path/yarn-cache --use-yarnrc $frontend_path/.yarnrc install 2>&1
+		sudo -u $app env "PATH=$node_PATH" yarn --cache-folder $frontend_path/yarn-cache --use-yarnrc $frontend_path/.yarnrc run build 2>&1
+		sudo -u $app env "PATH=$node_PATH" yarn --cache-folder $frontend_path/yarn-cache --use-yarnrc $frontend_path/.yarnrc add serve 2>&1
 		chown -R root:root $frontend_path
 	popd || ynh_die
 }

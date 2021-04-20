@@ -15,6 +15,7 @@ User = get_user_model()
 try:
     user = User.objects.get(username='$user')
     user.scan_directory='/home/yunohost.multimedia/$user/Picture'
+    user.is_active = True
     user.save()
 except User.DoesNotExist:
     User.objects.create_user('$username', email='$mail', scan_directory='/home/yunohost.multimedia/$user/Picture')

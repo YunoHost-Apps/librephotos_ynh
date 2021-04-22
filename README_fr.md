@@ -27,7 +27,7 @@ Il y a un panneau d'administration à `https://votre-domaine.tld/admin`.
 
 ## Documentation
 
- * Documentation officielle : https://github.com/LibrePhotos/librephotos
+* Documentation officielle : https://github.com/LibrePhotos/librephotos
 
 ## Caractéristiques spécifiques YunoHost
 LDAP est pris charge. Le dossier de photos de chaque utilisateur est defini comme `/home/yunohost.multimedia/$username/Picture` par défaut.
@@ -48,9 +48,9 @@ LDAP est pris charge. Le dossier de photos de chaque utilisateur est defini comm
 
 ## Liens
 
- * Signaler un bug : https://github.com/YunoHost-Apps/librephotos_ynh/issues
- * Dépôt de l'application principale : https://github.com/LibrePhotos/librephotos
- * Site web YunoHost : https://yunohost.org/
+* Signaler un bug : https://github.com/YunoHost-Apps/librephotos_ynh/issues
+* Dépôt de l'application principale : https://github.com/LibrePhotos/librephotos
+* Site web YunoHost : https://yunohost.org/
 
 ---
 

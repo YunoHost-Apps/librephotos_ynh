@@ -41,7 +41,7 @@ function set_up_virtualenv {
 		chown -R $app:$app $backend_path
 		sudo -u $app python3 -m venv $backend_path/venv
 		sudo -u $app $backend_path/venv/bin/pip --cache-dir $backend_path/.cache/pip install -U wheel pip setuptools 2>&1
-		sudo -u $app $backend_path/venv/bin/pip --cache-dir $backend_path/.cache/pip install -U torch==1.8.0+cpu torchvision==0.9.0+cpu -f https://download.pytorch.org/whl/torch_stable.html 2>&1
+		sudo -u $app $backend_path/venv/bin/pip --cache-dir $backend_path/.cache/pip install -U torch==1.8.0+cpu torchvision==0.9.0+cpu -f https://download.pytorch.org/whl/torch_stable.html 2>&1 || sudo -u $app $backend_path/venv/bin/pip --cache-dir $backend_path/.cache/pip install -U torch==1.8.0 torchvision==0.9.0 -f https://download.pytorch.org/whl/torch_stable.html 2>&1
 		sudo -u $app $backend_path/venv/bin/pip --cache-dir $backend_path/.cache/pip install -U --install-option="--no" --install-option="DLIB_USE_CUDA" --install-option="--no" --install-option="USE_AVX_INSTRUCTIONS" --install-option="--no" --install-option="USE_SSE4_INSTRUCTIONS" dlib 2>&1
 		sudo -u $app $backend_path/venv/bin/pip --cache-dir $backend_path/.cache/pip install -U --requirement $backend_path/requirements.txt 2>&1
 		sudo -u $app $backend_path/venv/bin/pip --cache-dir $backend_path/.cache/pip install -U --requirement $backend_path/requirements-ynh.txt 2>&1

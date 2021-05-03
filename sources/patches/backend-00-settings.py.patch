@@ -22,7 +22,6 @@ index 3449af1..f1a6be7 100644
 @@ -93,10 +94,11 @@ CORS_ALLOW_HEADERS = (
      'x-requested-with',
  )
- )
  
 -CORS_ORIGIN_WHITELIST = (
 -    'http://localhost:3000',

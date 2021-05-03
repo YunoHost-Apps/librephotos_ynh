@@ -114,6 +114,13 @@ function set_permissions {
 	setfacl -n -R -m user:www-data:rx -m default:user:www-data:rx $data_path/protected_media $data_path/data $data_path/data/nextcloud_media
 }
 
+function set_up_logrotate {
+	ynh_use_logrotate --logfile="/var/log/$app/command_build_similarity_index.log" --specific_user="$app/$app" --non_append
+	ynh_use_logrotate --logfile="/var/log/$app/gunicorn_django.log" --specific_user="$app/$app"
+	ynh_use_logrotate --logfile="/var/log/$app/image_similarity.log" --specific_user="$app/$app"
+	ynh_use_logrotate --logfile="/var/log/$app/ownphotos.log" --specific_user="$app/$app"
+}
+
 #=================================================
 # EXPERIMENTAL HELPERS
 #=================================================

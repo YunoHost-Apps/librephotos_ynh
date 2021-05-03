@@ -198,10 +198,7 @@ set_permissions
 ynh_script_progression --message="Configuring log rotation..." --weight=1
 
 # Use logrotate to manage application logfiles
-ynh_use_logrotate --logfile="/var/log/$app/command_build_similarity_index.log" --specific_user="$app/$app"
-ynh_use_logrotate --logfile="/var/log/$app/gunicorn_django.log" --specific_user="$app/$app"
-ynh_use_logrotate --logfile="/var/log/$app/image_similarity.log" --specific_user="$app/$app"
-ynh_use_logrotate --logfile="/var/log/$app/ownphotos.log" --specific_user="$app/$app"
+set_up_logrotate
 
 #=================================================
 # INTEGRATE SERVICES IN YUNOHOST

@@ -6,7 +6,7 @@
         "en": "A photo viewer and manager similar to Google Photos",
         "fr": "Un gestionnaire de photos semblable à Google Photos"
     },
-    "version": "0.0.20210503~ynh1",
+    "version": "0.0.20210516~ynh1",
     "url": "https://github.com/LibrePhotos/librephotos",
     "license": "MIT",
     "maintainer": {

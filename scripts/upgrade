@@ -63,6 +63,17 @@ ynh_systemd_action --service_name=$app-image-similarity --action="stop" --log_pa
 ynh_systemd_action --service_name=$app-worker --action="stop" --log_path="/var/log/$app/$app-worker.log"
 
 #=================================================
+# ENSURE DOWNWARD COMPATIBILITY
+#=================================================
+ynh_script_progression --message="Ensuring downward compatibility..." --time --weight=1
+
+# Remove old node version
+ynh_use_nodejs
+if [ "$nodejs_version" -eq 10 ]; then
+	ynh_remove_nodejs
+fi
+
+#=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
 

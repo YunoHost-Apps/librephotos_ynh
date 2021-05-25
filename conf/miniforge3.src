@@ -1,0 +1,7 @@
+SOURCE_URL=https://github.com/conda-forge/miniforge/releases/download/4.10.1-4/Miniforge3-4.10.1-4-Linux-aarch64.sh
+SOURCE_SUM=68f11be0b8272b9218f62fa3ba1b7c58783427e65db7b7ba77e7cdf91f099540
+SOURCE_SUM_PRG=sha256sum
+SOURCE_FORMAT=sh
+SOURCE_IN_SUBDIR=false
+SOURCE_FILENAME=Miniforge3-4.10.1-4-Linux-aarch64.sh
+SOURCE_EXTRACT=false

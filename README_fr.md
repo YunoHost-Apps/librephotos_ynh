@@ -3,7 +3,7 @@
 [![Niveau d'intégration](https://dash.yunohost.org/integration/librephotos.svg)](https://dash.yunohost.org/appci/app/librephotos) ![](https://ci-apps.yunohost.org/ci/badges/librephotos.status.svg) ![](https://ci-apps.yunohost.org/ci/badges/librephotos.maintain.svg)  
 [![Installer librephotos avec YunoHost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=librephotos)
 
-*[Read this readme in english.](./README.md)* 
+*[Read this readme in english.](./README.md)*
 
 > *Ce package vous permet d'installer LibrePhotos rapidement et simplement sur un serveur YunoHost.  
 Si vous n'avez pas YunoHost, consultez [le guide](https://yunohost.org/#/install) pour apprendre comment l'installer.*
@@ -11,7 +11,7 @@ Si vous n'avez pas YunoHost, consultez [le guide](https://yunohost.org/#/install
 ## Vue d'ensemble
 LibrePhotos est un sercice inspiré par Google Photos. Il prend en charge la classification des visages, le groupement des photos par date, la localisation géographique, ou objets présents, et la création d'albums.
 
-**Version incluse :** 2020-05-16
+**Version incluse :** 2021-05-25
 
 ## Captures d'écran
 

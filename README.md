@@ -11,7 +11,7 @@ If you don't have YunoHost, please consult [the guide](https://yunohost.org/#/in
 ## Overview
 LibrePhotos is a Google Photos-like app. It supports automatic classification of faces, grouping photos by date, location, or objects present, and album creation.
 
-**Shipped version:** 2020-05-16
+**Shipped version:** 2021-05-25
 
 ## Screenshots
 

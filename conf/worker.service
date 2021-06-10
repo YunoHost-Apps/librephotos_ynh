@@ -9,8 +9,10 @@ Requires=postgresql.service
 User=__APP__
 Group=__APP__ 
 EnvironmentFile=__FINALPATH__/librephotos.env
-ExecStart=/usr/bin/env bash -c "PATH=__FINALPATH__/backend/venv/bin:$PATH exec __FINALPATH__/bin/librephotos-worker"
+ExecStart=/usr/bin/env bash -c "PATH=__PATH_PREFIX__:$PATH python manage.py rqworker default"
 WorkingDirectory=__FINALPATH__/backend
+StandardOutput=append:/var/log/__APP__/__APP__-worker.log
+StandardError=inherit
 
 [Install]
 WantedBy=multi-user.target

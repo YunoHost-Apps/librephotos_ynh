@@ -3,13 +3,27 @@ set -a
 source /usr/share/yunohost/helpers
 
 app="${0//.\/50-}"
-username=$1
+user=$1
 mail=$2
 
-final_path=$(ynh_app_setting_get --app=$app --key=final_path)
+arch="$(dpkg --print-architecture)"
+arm64_test=1
 
-pushd $final_path/backend
-	sudo -u $app $final_path/bin/librephotos-cli shell <<< "
+final_path=$(ynh_app_setting_get --app=$app --key=final_path)
+backend_path="$final_path/backend"
+path_prefix="$backend_path/venv/bin"
+if [ "$arch" = "arm64" ] || [ "$arm64_test" -eq 1 ]; then
+	export CONDA_DIR="$backend_path/conda"
+	path_prefix="$backend_path/cmake/bin:$CONDA_DIR/condabin:$CONDA_DIR/bin:$path_prefix"
+fi
+
+pushd "$backend_path"
+		sudo -u $app bash -c "
+		set -a
+		export PATH=\"$path_prefix:"'$PATH'"\"
+		source \"$final_path\"/librephotos.env
+		python3 manage.py shell 
+	" <<< "
 from django.contrib.auth import get_user_model
 User = get_user_model()
 try:
@@ -18,6 +32,6 @@ try:
     user.is_active = True
     user.save()
 except User.DoesNotExist:
-    User.objects.create_user('$username', email='$mail', scan_directory='/home/yunohost.multimedia/$user/Picture')
+    User.objects.create_user('$user', email='$mail', scan_directory='/home/yunohost.multimedia/$user/Picture')
 " 2>&1
 popd

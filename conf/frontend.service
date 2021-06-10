@@ -6,8 +6,10 @@ Documentation=https://github.com/LibrePhotos/librephotos
 User=__APP__
 Group=__APP__ 
 EnvironmentFile=__FINALPATH__/librephotos.env
-ExecStart=__FINALPATH__/bin/librephotos-frontend
+ExecStart=/usr/bin/env bash -c "PATH=__PATH_PREFIX__:$PATH  ./node_modules/.bin/serve build -d -l $httpPort"
 WorkingDirectory=__FINALPATH__/frontend
+StandardOutput=append:/var/log/__APP__/__APP__-frontend.log
+StandardError=inherit
 
 [Install]
 WantedBy=multi-user.target

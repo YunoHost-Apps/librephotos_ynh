@@ -8,8 +8,11 @@ After=network.target
 User=__APP__
 Group=__APP__ 
 EnvironmentFile=__FINALPATH__/librephotos.env
-ExecStart=/usr/bin/env bash -c "PATH=__FINALPATH__/backend/venv/bin:$PATH exec __FINALPATH__/bin/librephotos-image-similarity"
+ExecStart=/usr/bin/env bash -c "PATH=__PATH_PREFIX__:$PATH python3 image_similarity/main.py"
 WorkingDirectory=__FINALPATH__/backend
+StandardOutput=append:/var/log/__APP__/__APP__-image-similarity.log
+StandardError=inherit
+
 
 [Install]
 WantedBy=multi-user.target

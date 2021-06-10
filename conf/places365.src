@@ -1,0 +1,7 @@
+SOURCE_URL=https://github.com/LibrePhotos/librephotos-docker/releases/download/0.1/places365.tar.gz
+SOURCE_SUM=27792ffcd1f6a4de7abebdea046dda0916f9cd12eba7bed7b5f51f120f91f0d8
+SOURCE_SUM_PRG=sha256sum
+SOURCE_FORMAT=tar.gz
+SOURCE_IN_SUBDIR=true
+SOURCE_FILENAME=places365.tar.gz
+SOURCE_EXTRACT=true

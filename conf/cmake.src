@@ -1,0 +1,7 @@
+SOURCE_URL=https://github.com/Kitware/CMake/releases/download/v3.20.3/cmake-3.20.3-linux-aarch64.tar.gz
+SOURCE_SUM=77620f99e9d5f39cf4a49294c6a68c89a978ecef144894618974b9958efe3c2a
+SOURCE_SUM_PRG=sha256sum
+SOURCE_FORMAT=tar.gz
+SOURCE_IN_SUBDIR=true
+SOURCE_FILENAME=cmake-3.20.3-linux-aarch64.tar.gz
+SOURCE_EXTRACT=true

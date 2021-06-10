@@ -115,11 +115,11 @@ ynh_system_user_create --username=$app --home_dir=$data_path
 #=================================================
 # SPECIFIC SETUP
 #=================================================
-# SET UP VIRTUALENV
+# SET UP BACKEND
 #=================================================
-ynh_script_progression --message="Initializing backend Python virtualenv..." --weight=60
+ynh_script_progression --message="Setting up backend..." --weight=60
 
-set_up_virtualenv
+set_up_backend
 
 #=================================================
 # SET UP FRONTEND
@@ -151,26 +151,35 @@ add_configuations
 #=================================================
 ynh_script_progression --message="Finalizing database..." --weight=1
 
-pushd $final_path || ynh_die
-	chown -R $app:$app $final_path
-	chown -R $app:$app /var/log/$app
-	sudo -u $app $final_path/bin/librephotos-upgrade 2>&1
-	sudo -u $app $final_path/bin/librephotos-createadmin "$admin"  "$(ynh_user_get_info $admin 'mail')" $(ynh_string_random -l 64) 2>&1
-	for username in $(ynh_user_list); do
-		user_email=$(ynh_user_get_info --username="$username" --key=mail)
-		sudo -u $app $final_path/bin/librephotos-cli shell <<< "
+upgrade_db
+
+pushd "$final_path/backend"
+	admin_mail="$(ynh_user_get_info $admin 'mail')"
+	sudo -u $app bash -c "
+		set -a
+		export PATH=\"$path_prefix:"'$PATH'"\"
+		source \"$final_path\"/librephotos.env
+		python3 manage.py createsuperuser --noinput --username \"$admin\" --email \"$admin_mail\"
+	" 2>&1
+	for user in $(ynh_user_list); do
+		mail=$(ynh_user_get_info --username="$user" --key=mail)
+		sudo -u $app bash -c "
+			set -a
+			export PATH=\"$path_prefix:"'$PATH'"\"
+			source \"$final_path\"/librephotos.env
+			python3 manage.py shell 
+		" <<< "
 from django.contrib.auth import get_user_model
 User = get_user_model()
 try:
-    user = User.objects.get(username='$username')
-    user.scan_directory='/home/yunohost.multimedia/$username/Picture'
+    user = User.objects.get(username='$user')
+    user.scan_directory='/home/yunohost.multimedia/$user/Picture'
     user.save()
 except User.DoesNotExist:
-    User.objects.create_user('$username', email='$user_email', scan_directory='/home/yunohost.multimedia/$username/Picture')
+    User.objects.create_user('$user', email='$mail', scan_directory='/home/yunohost.multimedia/$user/Picture')
 " 2>&1
 	done
-	chown -R root:root $final_path
-popd || ynh_die
+popd
 
 #=================================================
 # YUNOHOST MULTIMEDIA INTEGRATION

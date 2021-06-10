@@ -6,8 +6,16 @@
         "en": "A photo viewer and manager similar to Google Photos",
         "fr": "Un gestionnaire de photos semblable à Google Photos"
     },
-    "version": "0.0.20210531~ynh1",
+    "version": "0.0.20210609~ynh1",
     "url": "https://github.com/LibrePhotos/librephotos",
+    "upstream": {
+        "license": "MIT",
+        "website": "https://librephotos.com/",
+        "demo": "https://demo2.librephotos.com/ (user: demo, password: demo1234)",
+        "admindoc": "https://docs.librephotos.com/",
+        "userdoc": "https://github.com/LibrePhotos/librephotos",
+        "code": "https://github.com/LibrePhotos/librephotos"
+    },
     "license": "MIT",
     "maintainer": {
         "name": "Jules Bertholet",
@@ -45,7 +53,7 @@
                 "default": false,
                 "ask": {
                     "en": "Allow write access to multimedia directories?",
-                    "fr": "Autorizer la modification des fichiers dans les dossiers multimédia ?"
+                    "fr": "Autoriser la modification des fichiers dans les dossiers multimédia ?"
                 }
             }
         ]

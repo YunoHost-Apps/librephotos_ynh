@@ -1,7 +1,0 @@
-SOURCE_URL=https://s3.eu-central-1.amazonaws.com/ownphotos-deploy/im2txt_model.tar.gz
-SOURCE_SUM=05015f7819190c1d8d4dea18eebf21fec12c2c5f7eb8b878930faeb465c27d88
-SOURCE_SUM_PRG=sha256sum
-SOURCE_FORMAT=tar.gz
-SOURCE_IN_SUBDIR=true
-SOURCE_FILENAME=im2txt_model.tar.gz
-SOURCE_EXTRACT=true

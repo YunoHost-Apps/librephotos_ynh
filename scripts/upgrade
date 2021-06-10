@@ -109,11 +109,11 @@ ynh_system_user_create --username=$app --home_dir=$data_path
 #=================================================
 # SPECIFIC UPGRADE
 #=================================================
-# SET UP VIRTUALENV
+# SET UP BACKEND
 #=================================================
-ynh_script_progression --message="Upgrading Python virtualenv..." --weight=50
+ynh_script_progression --message="Setting up backend..." --weight=50
 
-set_up_virtualenv
+set_up_backend
 
 #=================================================
 # SET UP FRONTEND
@@ -145,12 +145,7 @@ add_configuations
 #=================================================
 ynh_script_progression --message="Finalizing database..." --weight=1
 
-pushd $final_path || ynh_die
-	chown -R $app:$app $final_path
-	chown -R $app:$app /var/log/$app
-	sudo -u $app $final_path/bin/librephotos-upgrade 2>&1
-	chown -R root:root $final_path
-popd || ynh_die
+upgrade_db
 
 #=================================================
 # YUNOHOST MULTIMEDIA INTEGRATION

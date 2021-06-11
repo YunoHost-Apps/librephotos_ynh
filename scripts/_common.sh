@@ -8,7 +8,7 @@
 pkg_dependencies="libtinfo5 unzip ca-certificates swig libpq-dev postgresql postgresql-contrib postgresql-common ffmpeg libimage-exiftool-perl curl libopenblas-dev libmagic1 libboost-all-dev libxrender-dev liblapack-dev git bzip2 cmake build-essential libsm6 libglib2.0-0 libgl1-mesa-glx gfortran gunicorn libheif-dev libssl-dev rustc liblzma-dev python3 python3-pip python3-venv imagemagick xsel nodejs npm redis-server libmagickwand-dev libldap2-dev libsasl2-dev ufraw-batch"
 
 arch="$(dpkg --print-architecture)"
-arm64_test=1
+arm64_test=0
 
 #=================================================
 # PERSONAL HELPERS

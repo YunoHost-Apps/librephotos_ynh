@@ -7,7 +7,7 @@ user=$1
 mail=$2
 
 arch="$(dpkg --print-architecture)"
-arm64_test=1
+arm64_test=0
 
 final_path=$(ynh_app_setting_get --app=$app --key=final_path)
 backend_path="$final_path/backend"

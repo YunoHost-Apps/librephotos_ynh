@@ -65,7 +65,7 @@ function set_up_backend {
 		sudo -u $app env "PATH=$python_path" pip --cache-dir "$cache_dir" install -U wheel pip setuptools 2>&1
 		if [ "$arch" = "arm64" ] || [ "$arm64_test" -eq 1 ]; then
 			sudo -u $app env "CONDA_DIR=$CONDA_DIR" bash "${CONDA_DIR}/Miniforge3-4.10.1-4-Linux-aarch64.sh" -bu -p "${CONDA_DIR}"
-			sudo -u $app env "PATH=$python_path" pip --cache-dir "$cache_dir" install -U torch==1.8.0 torchvision==0.9.0 -f https://download.pytorch.org/whl/torch_stable.html 2>&1
+			sudo -u $app env "PATH=$python_path" pip --cache-dir "$cache_dir" install -U torch==1.8.1 torchvision==0.9.1 -f https://torch.maku.ml/whl/stable.html 2>&1
 			sudo -u $app env "PATH=$python_path" conda install -y numpy psycopg2 cython pandas scikit-learn=0.24.1 scikit-image=0.18.1 spacy=2.3.5 gevent=20.12.1 matplotlib=3.3.2
 			pushd "$backend_path/faiss"
 				sudo -u $app env "PATH=$python_path" cmake -B build . -DFAISS_ENABLE_GPU=OFF -DFAISS_ENABLE_PYTHON=ON -DFAISS_OPT_LEVEL=generic

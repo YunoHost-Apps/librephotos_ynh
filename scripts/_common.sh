@@ -45,7 +45,7 @@ function unpack_source {
 			wget -O "${CONDA_DIR}/Miniforge3-4.10.1-4-Linux-aarch64.sh" https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh 2>&1
 			ynh_setup_source --source_id="cmake_amd64" --dest_dir="$final_path/backend/cmake/"
 		fi
-			ynh_setup_source --source_id="faiss" --dest_dir="$final_path/backend/faiss/"
+			#ynh_setup_source --source_id="faiss" --dest_dir="$final_path/backend/faiss/"
 	fi
 
 	mkdir -p "/var/log/$app"
@@ -66,14 +66,14 @@ function set_up_backend {
 		if [ "$arch" = "arm64" ] || [ "$arm64_test" -eq 1 ]; then
 			sudo -u $app env "CONDA_DIR=$CONDA_DIR" bash "${CONDA_DIR}/Miniforge3-4.10.1-4-Linux-aarch64.sh" -bu -p "${CONDA_DIR}"
 			sudo -u $app env "PATH=$python_path" pip --cache-dir "$cache_dir" install -U torch==1.8.1 torchvision==0.9.1 -f https://torch.maku.ml/whl/stable.html 2>&1
-			sudo -u $app env "PATH=$python_path" conda install -y numpy psycopg2 cython pandas scikit-learn=0.24.1 scikit-image=0.18.1 spacy=2.3.5 gevent=20.12.1 matplotlib=3.3.2
-			pushd "$backend_path/faiss"
-				sudo -u $app env "PATH=$python_path" cmake -B build . -DFAISS_ENABLE_GPU=OFF -DFAISS_ENABLE_PYTHON=ON -DFAISS_OPT_LEVEL=generic
-				sudo -u $app env "PATH=$python_path" make -C build -j faiss
-				sudo -u $app env "PATH=$python_path" make -C build -j swigfaiss
-				cd "build/faiss/python"
-				sudo -u $app env "PATH=$python_path" python setup.py install
-			popd
+			sudo -u $app env "PATH=$python_path" conda install -y numpy psycopg2 cython pandas scikit-learn=0.24.1 scikit-image=0.18.1 spacy=2.3.5 gevent=20.12.1 matplotlib=3.3.2 faiss-cpu==1.7.0
+			#pushd "$backend_path/faiss"
+			#	sudo -u $app env "PATH=$python_path" cmake -B build . -DFAISS_ENABLE_GPU=OFF -DFAISS_ENABLE_PYTHON=ON -DFAISS_OPT_LEVEL=generic
+			#	sudo -u $app env "PATH=$python_path" make -C build -j faiss
+			#	sudo -u $app env "PATH=$python_path" make -C build -j swigfaiss
+			#	cd "build/faiss/python"
+			#	sudo -u $app env "PATH=$python_path" python setup.py install
+			#popd
 			sed -i "/spacy==2.3.2/d" "$backend_path/requirements.txt"
 			sed -i "/sklearn==0.0/d" "$backend_path/requirements.txt"
 			sed -i "/gevent==20.9.0/d" "$backend_path/requirements.txt"

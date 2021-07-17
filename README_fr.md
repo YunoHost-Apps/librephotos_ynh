@@ -13,7 +13,7 @@ Si vous n'avez pas YunoHost, regardez [ici](https://yunohost.org/#/install) pour
 
 Un gestionnaire de photos semblable à Google Photos
 
-**Version incluse :** 0.0.20210609~ynh1
+**Version incluse :** 0.0.20210623~ynh1
 
 **Démo :** https://demo2.librephotos.com/ (user: demo, password: demo1234)
 

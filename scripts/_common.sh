@@ -89,7 +89,6 @@ function set_up_backend {
 		popd
 		sudo -u $app env "PATH=$python_path" pip --cache-dir "$cache_dir" install -U --requirement "$backend_path/requirements.txt" 2>&1
 		sudo -u $app env "PATH=$python_path" pip --cache-dir "$cache_dir" install -U --requirement "$backend_path/requirements-ynh.txt" 2>&1
-		sudo -u $app env "PATH=$python_path" python -m spacy download en_core_web_sm 2>&1
 		#if [ "$arch" = "arm64" ] || [ "$arm64_test" -eq 1 ]; then
 			#sudo -u $app unzip "$CONDA_DIR/lib/python3.8/site-packages/"faiss*.egg -d "$CONDA_DIR/lib/python3.8/site-packages/"
 		#fi

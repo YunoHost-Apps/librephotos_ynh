@@ -17,7 +17,7 @@ If you don't have YunoHost, please consult [the guide](https://yunohost.org/#/in
 
 A photo viewer and manager similar to Google Photos
 
-**Shipped version:** 0.0.20210609~ynh1
+**Shipped version:** 0.2021.36~ynh1
 
 **Demo:** https://demo2.librephotos.com/ (user: demo, password: demo1234)
 

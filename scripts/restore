@@ -39,14 +39,11 @@ port=$(ynh_app_setting_get --app=$app --key=port)
 backend_port=$(ynh_app_setting_get --app=$app --key=port)
 similarity_port=$(ynh_app_setting_get --app=$app --key=similarity_port)
 
-
 #=================================================
 # CHECK IF THE APP CAN BE RESTORED
 #=================================================
 ynh_script_progression --message="Validating restoration parameters..." --weight=1
 
-ynh_webpath_available --domain=$domain --path_url=$path_url \
-	|| ynh_die --message="Path not available: ${domain}${path_url}"
 test ! -d $final_path \
 	|| ynh_die --message="There is already a directory: $final_path "
 
@@ -56,10 +53,12 @@ test ! -d $data_path \
 #=================================================
 # STANDARD RESTORATION STEPS
 #=================================================
-# RESTORE THE NGINX CONFIGURATION
+# RECREATE THE DEDICATED USER
 #=================================================
+ynh_script_progression --message="Recreating the dedicated system user..." --weight=1
 
-ynh_restore_file --origin_path="/etc/nginx/conf.d/$domain.d/$app.conf"
+# Create the dedicated user (if not existing)
+ynh_system_user_create --username=$app --home_dir=$data_path
 
 #=================================================
 # RESTORE THE APP MAIN DIR
@@ -69,9 +68,9 @@ ynh_script_progression --message="Restoring the app main directory..." --weight=
 ynh_restore_file --origin_path="$final_path"
 
 #=================================================
-# RESTORE THE APP DATA DIR
+# RESTORE THE DATA DIRECTORY
 #=================================================
-ynh_script_progression --message="Restoring the app data directory..." --weight=1
+ynh_script_progression --message="Restoring the data directory..." --weight=1
 
 ynh_restore_file --origin_path="$data_path" --not_mandatory
 mkdir -p $data_path/protected_media/{thumbnails_big,square_thumbnails,square_thumbnails_small,faces}
@@ -80,25 +79,14 @@ mkdir -p $data_path/matplotlib
 ln -s $final_path/data_models $data_path/data_models
 
 #=================================================
-# RECREATE THE DEDICATED USER
-#=================================================
-ynh_script_progression --message="Recreating the dedicated system user..." --weight=1
-
-# Create the dedicated user (if not existing)
-ynh_system_user_create --username=$app --home_dir=$data_path
-
-#=================================================
-# RESTORE VARIOUS FILES
+# RESTORE USER RIGHTS
 #=================================================
 
-ynh_restore_file --origin_path="/var/log/$app"
+# Restore permissions on app files
+set_permissions
 
 #=================================================
-# RESTORE THE LOGROTATE CONFIGURATION
-#=================================================
-
-ynh_restore_file --origin_path="/etc/logrotate.d/$app"
-
+# SPECIFIC RESTORATION
 #=================================================
 # REINSTALL DEPENDENCIES
 #=================================================
@@ -109,11 +97,18 @@ ynh_install_app_dependencies $pkg_dependencies
 ynh_install_extra_app_dependencies --repo="deb https://dl.yarnpkg.com/debian/ stable main" --package="yarn" --key="https://dl.yarnpkg.com/debian/pubkey.gpg"
 
 #=================================================
-# RESTORE USER RIGHTS
+# RESTORE NODE.JS
 #=================================================
+ynh_script_progression --message="Restoring Node.js..." --weight=1
 
-# Restore permissions on app files
-set_permissions
+set_node_vars
+
+#=================================================
+# RESTORE THE NGINX CONFIGURATION
+#=================================================
+ynh_script_progression --message="Restoring the NGINX web server configuration..."
+
+ynh_restore_file --origin_path="/etc/nginx/conf.d/$domain.d/$app.conf"
 
 #=================================================
 # SPECIFIC RESTORATION
@@ -127,11 +122,21 @@ ynh_psql_setup_db --db_user=$db_user --db_name=$db_name --db_pwd=$db_pwd
 ynh_psql_connect_as --user=$db_user --password=$db_pwd --database=$db_name < ./db.sql
 
 #=================================================
-# RESTORE NODE.JS
+# RESTORE VARIOUS FILES
 #=================================================
-ynh_script_progression --message="Restoring Node.js..." --weight=1
 
-set_node_vars
+ynh_restore_file --origin_path="/var/log/$app"
+
+#=================================================
+# YUNOHOST MULTIMEDIA INTEGRATION
+#=================================================
+ynh_script_progression --message="Adding multimedia directories..." --weight=1
+
+# Build YunoHost multimedia directories
+ynh_multimedia_build_main_dir
+if [ $allow_multimedia_write -eq 1 ]; then
+	ynh_multimedia_addaccess $app
+fi
 
 #=================================================
 # RESTORE SYSTEMD
@@ -146,6 +151,13 @@ ynh_restore_file --origin_path="/etc/systemd/system/$app-image-similarity.servic
 systemctl enable $app-image-similarity.service --quiet
 ynh_restore_file --origin_path="/etc/systemd/system/$app-worker.service"
 systemctl enable $app-worker.service --quiet
+
+#=================================================
+# RESTORE THE LOGROTATE CONFIGURATION
+#=================================================
+ynh_script_progression --message="Restoring the logrotate configuration..."
+
+ynh_restore_file --origin_path="/etc/logrotate.d/$app"
 
 #=================================================
 # INTEGRATE SERVICE IN YUNOHOST
@@ -168,17 +180,6 @@ ynh_systemd_action --service_name=$app-image-similarity --action="start" --log_p
 ynh_systemd_action --service_name=$app-worker --action="start" --log_path="/var/log/$app/$app-worker.log"
 
 #=================================================
-# YUNOHOST MULTIMEDIA INTEGRATION
-#=================================================
-ynh_script_progression --message="Adding multimedia directories..." --weight=1
-
-# Build YunoHost multimedia directories
-ynh_multimedia_build_main_dir
-if [ $allow_multimedia_write -eq 1 ]; then
-	ynh_multimedia_addaccess $app
-fi
-
-#=================================================
 # GENERIC FINALIZATION
 #=================================================
 # RELOAD NGINX
@@ -190,4 +191,5 @@ ynh_systemd_action --service_name=nginx --action=reload
 #=================================================
 # END OF SCRIPT
 #=================================================
+
 ynh_script_progression --message="Restoration completed for $app" --last

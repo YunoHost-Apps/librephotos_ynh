@@ -6,19 +6,18 @@ app="${0//.\/50-}"
 user=$1
 purge=$2
 
-arch="$(dpkg --print-architecture)"
 arm64_test=0
 
 final_path=$(ynh_app_setting_get --app=$app --key=final_path)
 backend_path="$final_path/backend"
 path_prefix="$backend_path/venv/bin"
-if [ "$arch" = "arm64" ] || [ "$arm64_test" -eq 1 ]; then
+if [ "$YNH_ARCH" = "arm64" ] || [ "$arm64_test" -eq 1 ]; then
 	export CONDA_DIR="$backend_path/conda"
 	path_prefix="$backend_path/cmake/bin:$CONDA_DIR/condabin:$CONDA_DIR/bin:$path_prefix"
 fi
 
 pushd "$backend_path"
-	sudo -u $app bash -c "
+	ynh_exec_warn_less ynh_exec_as $app bash -c "
 		set -a
 		export PATH=\"$path_prefix:"'$PATH'"\"
 		source \"$final_path\"/librephotos.env
@@ -34,5 +33,5 @@ try:
         user.delete()
 except User.DoesNotExist:
     pass
-" 2>&1
+"
 popd

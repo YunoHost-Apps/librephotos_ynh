@@ -6,11 +6,11 @@
         "en": "A photo viewer and manager similar to Google Photos",
         "fr": "Un gestionnaire de photos semblable à Google Photos"
     },
-    "version": "0.2021.36~ynh1",
+    "version": "0.2021.36~ynh2",
     "url": "https://github.com/LibrePhotos/librephotos",
     "upstream": {
         "license": "MIT",
-        "website": "https://librephotos.com/",
+        "website": "https://librephotos.com",
         "demo": "https://demo2.librephotos.com/ (user: demo, password: demo1234)",
         "admindoc": "https://docs.librephotos.com/",
         "userdoc": "https://github.com/LibrePhotos/librephotos",
@@ -22,7 +22,7 @@
         "email": "jules.berthlet@quoi.xyz"
     },
     "requirements": {
-        "yunohost": ">= 4.2.4"
+        "yunohost": ">= 4.3.0"
     },
     "multi_instance": false,
     "services": [
@@ -31,21 +31,19 @@
         "postgresql"
     ],
     "arguments": {
-        "install" : [
+        "install": [
             {
                 "name": "domain",
-                "type": "domain",
-                "example": "example.com"
-            },
-            {
-                "name": "admin",
-                "type": "user",
-                "example": "johndoe"
+                "type": "domain"
             },
             {
                 "name": "is_public",
                 "type": "boolean",
                 "default": true
+            },
+            {
+                "name": "admin",
+                "type": "user"
             },
             {
                 "name": "allow_multimedia_write",

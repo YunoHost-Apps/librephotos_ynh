@@ -15,7 +15,7 @@ source /usr/share/yunohost/helpers
 #=================================================
 
 ynh_clean_setup () {
-	ynh_clean_check_starting
+	true
 }
 # Exit if an error occurs during the execution of the script
 ynh_abort_if_errors
@@ -42,6 +42,12 @@ ynh_print_info --message="Declaring files to be backed up..."
 #=================================================
 
 ynh_backup --src_path="$final_path"
+
+#=================================================
+# BACKUP THE DATA DIR
+#=================================================
+
+ynh_backup --src_path="$data_path" --is_big
 
 #=================================================
 # BACKUP THE NGINX CONFIGURATION
@@ -71,7 +77,6 @@ ynh_backup --src_path="/etc/systemd/system/$app-worker.service"
 #=================================================
 
 ynh_backup --src_path="/var/log/$app"
-ynh_backup --src_path="$data_path" --is_big
 
 #=================================================
 # BACKUP THE POSTGRESQL DATABASE
@@ -83,4 +88,5 @@ ynh_psql_dump_db --database="$db_name" > db.sql
 #=================================================
 # END OF SCRIPT
 #=================================================
+
 ynh_print_info --message="Backup script completed for $app. (YunoHost will then actually copy those files to the archive)."

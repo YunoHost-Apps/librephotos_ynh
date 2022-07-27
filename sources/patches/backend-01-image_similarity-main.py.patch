@@ -2,21 +2,11 @@ diff --git a/image_similarity/main.py b/image_similarity/main.py
 index 9ca6660..9a33d98 100644
 --- a/image_similarity/main.py
 +++ b/image_similarity/main.py
-@@ -7,6 +7,8 @@ from retrieval_index import RetrievalIndex
+@@ -58,6 +58,6 @@
  
- from utils import logger
- 
-+import os
-+
- app = Flask(__name__)
- api = Api(app)
- 
-@@ -48,7 +50,7 @@ api.add_resource(SearchIndex,'/search/')
- 
- if __name__ == '__main__':
-     logger.info('starting server')
--    server = WSGIServer(('0.0.0.0', 8002), app)
-+    server = WSGIServer(('0.0.0.0', int(os.environ['IMAGE_SIMILARITY_SERVER_PORT'])), app)
+ if __name__ == "__main__":
+     logger.info("starting server")
+-    server = WSGIServer(("0.0.0.0", 8002), app)
++    server = WSGIServer(("0.0.0.0", int(os.environ['IMAGE_SIMILARITY_SERVER_PORT'])), app)
      server_thread = gevent.spawn(server.serve_forever)
      gevent.joinall([server_thread])
- 

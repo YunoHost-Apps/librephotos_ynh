@@ -43,7 +43,7 @@ function unpack_source {
 			ynh_setup_source --source_id="miniforge3" --dest_dir="$CONDA_DIR"
 			ynh_setup_source --source_id="cmake" --dest_dir="$final_path/backend/cmake/"
 		else
-			wget -O "${CONDA_DIR}/Miniforge3-4.10.1-4-Linux-aarch64.sh" https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh
+			wget -O "${CONDA_DIR}/Miniforge3-4.10.1-4-Linux-aarch64.sh" https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh 2>&1
 			ynh_setup_source --source_id="cmake_amd64" --dest_dir="$final_path/backend/cmake/"
 		fi
 			#ynh_setup_source --source_id="faiss" --dest_dir="$final_path/backend/faiss/"
@@ -56,6 +56,7 @@ function set_up_backend {
 	backend_path="$final_path/backend"
 	pushd "$backend_path"
 		chown -R $app:$app "$backend_path"
+		chown -R $app:$app $data_path
 		ynh_exec_warn_less ynh_exec_as $app python3 -m venv $backend_path/venv
 		path_prefix="$backend_path/venv/bin"
 		if [ "$YNH_ARCH" = "arm64" ] || [ "$arm64_test" -eq 1 ]; then
@@ -85,15 +86,14 @@ function set_up_backend {
 		else
 			ynh_exec_warn_less ynh_exec_as $app env "PATH=$python_path" pip --cache-dir "$cache_dir" install -U torch==1.8.0+cpu torchvision==0.9.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
 		fi
-		pushd "$backend_path/dlib"
-			ynh_exec_warn_less ynh_exec_as $app env "PATH=$python_path" python setup.py install
-		popd
+		install_dlib
 		ynh_exec_warn_less ynh_exec_as $app env "PATH=$python_path" pip --cache-dir "$cache_dir" install -U --requirement "$backend_path/requirements.txt"
 		ynh_exec_warn_less ynh_exec_as $app env "PATH=$python_path" pip --cache-dir "$cache_dir" install -U --requirement "$backend_path/requirements-ynh.txt"
 		#if [ "$YNH_ARCH" = "arm64" ] || [ "$arm64_test" -eq 1 ]; then
 			#ynh_exec_warn_less ynh_exec_as $app unzip "$CONDA_DIR/lib/python3.8/site-packages/"faiss*.egg -d "$CONDA_DIR/lib/python3.8/site-packages/"
 		#fi
 		chown -R root:root "$backend_path"
+		chown -R root:root $data_path
 	popd
 }
 
@@ -115,11 +115,12 @@ function set_up_frontend {
 	frontend_path=$final_path/frontend
 	pushd $final_path/frontend
 		chown -R $app:$app $frontend_path
-		ynh_exec_warn_less ynh_exec_as $app touch $frontend_path/.yarnrc
-		ynh_exec_warn_less ynh_exec_as $app env "PATH=$node_PATH" yarn --cache-folder $frontend_path/yarn-cache --use-yarnrc $frontend_path/.yarnrc install --legacy-peer-deps
-		ynh_exec_warn_less ynh_exec_as $app env "PATH=$node_PATH" yarn --cache-folder $frontend_path/yarn-cache --use-yarnrc $frontend_path/.yarnrc run build
-		ynh_exec_warn_less ynh_exec_as $app env "PATH=$node_PATH" yarn --cache-folder $frontend_path/yarn-cache --use-yarnrc $frontend_path/.yarnrc add serve
+		chown -R $app:$app $data_path
+		export NODE_OPTIONS="--max-old-space-size=8192"
+		ynh_exec_warn_less ynh_exec_as $app $ynh_node_load_PATH $ynh_npm install --legacy-peer-deps
+		ynh_exec_warn_less ynh_exec_as $app $ynh_node_load_PATH $ynh_npm run build
 		chown -R root:root $frontend_path
+		chown -R root:root $data_path
 	popd
 }
 

@@ -2,60 +2,55 @@ diff --git a/ownphotos/settings.py b/ownphotos/settings.py
 index 3449af1..f1a6be7 100644
 --- a/ownphotos/settings.py
 +++ b/ownphotos/settings.py
-@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
+@@ -11,6 +11,7 @@
  """
  import datetime
  import os
 +import ldap, tzlocal
  
  for envvar in (
-     'SECRET_KEY',
-@@ -76,7 +77,7 @@ CONSTANCE_CONFIG = {
-     'IMAGE_DIRS': ("/data", 'Image dirs list (serialized json)', str)
+     "SECRET_KEY",
+@@ -77,7 +78,7 @@
+     "IMAGE_DIRS": ("/data", "Image dirs list (serialized json)", str),
  }
  
--INTERNAL_IPS = ('127.0.0.1', 'localhost', '192.168.1.100')
-+INTERNAL_IPS = ('127.0.0.1', 'localhost')
+-INTERNAL_IPS = ("127.0.0.1", "localhost", "192.168.1.100")
++INTERNAL_IPS = ("127.0.0.1", "localhost")
  
  CORS_ALLOW_HEADERS = (
-     'cache-control',
-@@ -93,10 +94,11 @@ CORS_ALLOW_HEADERS = (
-     'x-requested-with',
+     "cache-control",
+@@ -94,7 +95,9 @@
+     "x-requested-with",
  )
  
--CORS_ORIGIN_WHITELIST = (
--    'http://localhost:3000',
--    'http://192.168.1.100:3000'
--)
+-CORS_ORIGIN_WHITELIST = ("http://localhost:3000", "http://192.168.1.100:3000")
 +BACKEND_PORT=os.environ['httpPort']
 +
-+CORS_ORIGIN_WHITELIST = [
-+    'http://localhost:'  + BACKEND_PORT
-+]
++CORS_ORIGIN_WHITELIST = ('http://localhost:' + BACKEND_PORT)
  
  REST_FRAMEWORK = {
-     'DEFAULT_PERMISSION_CLASSES': (
-@@ -231,7 +233,7 @@ AUTH_PASSWORD_VALIDATORS = [
+     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+@@ -219,7 +222,7 @@
  
- LANGUAGE_CODE = 'en-us'
+ LANGUAGE_CODE = "en-us"
  
--TIME_ZONE = os.environ['TIME_ZONE']
+-TIME_ZONE = os.environ["TIME_ZONE"]
 +TIME_ZONE = tzlocal.get_localzone().zone
  
  USE_I18N = True
  
-@@ -267,8 +269,8 @@ FULLPHOTO_SIZE = (1000, 1000)
+@@ -258,8 +261,8 @@
  CORS_ORIGIN_ALLOW_ALL = False
  CORS_ALLOW_CREDENTIALS = True
  
--IMAGE_SIMILARITY_SERVER = 'http://localhost:8002'
+-IMAGE_SIMILARITY_SERVER = "http://localhost:8002"
 -
 +IMAGE_SIMILARITY_SERVER_PORT=os.environ['IMAGE_SIMILARITY_SERVER_PORT']
 +IMAGE_SIMILARITY_SERVER = 'http://localhost:' + IMAGE_SIMILARITY_SERVER_PORT
  
- #Must be less or egal of nb core CPU ( Nearly 2GB per process)
- HEAVYWEIGHT_PROCESS_ENV = os.environ.get('HEAVYWEIGHT_PROCESS', '1')
-@@ -289,3 +291,12 @@ LOGGING = {
+ # Must be less or egal of nb core CPU ( Nearly 2GB per process)
+ HEAVYWEIGHT_PROCESS_ENV = os.environ.get("HEAVYWEIGHT_PROCESS", "1")
+@@ -282,3 +285,12 @@
          },
      },
  }

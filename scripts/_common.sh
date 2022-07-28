@@ -64,7 +64,7 @@ function set_up_backend {
 		fi
 		local python_path="$path_prefix:$(ynh_exec_warn_less ynh_exec_as $app bash -c 'echo $PATH')"
 		local cache_dir="$backend_path/.cache/pip"
-		ynh_exec_warn_less ynh_exec_as $app env "PATH=$python_path" pip --cache-dir "$cache_dir" install -U wheel pip setuptools
+		ynh_exec_warn_less ynh_exec_as $app env "PATH=$python_path" pip --cache-dir "$cache_dir" install -U wheel pip setuptools pyvips
 		if [ "$YNH_ARCH" = "arm64" ] || [ "$arm64_test" -eq 1 ]; then
 			ynh_exec_warn_less ynh_exec_as $app env "CONDA_DIR=$CONDA_DIR" bash "${CONDA_DIR}/Miniforge3-4.10.1-4-Linux-aarch64.sh" -bu -p "${CONDA_DIR}"
 			ynh_exec_warn_less ynh_exec_as $app env "PATH=$python_path" pip --cache-dir "$cache_dir" install -U torch==1.8.1 torchvision==0.9.1 -f https://torch.maku.ml/whl/stable.html

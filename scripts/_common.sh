@@ -5,7 +5,7 @@
 #=================================================
 
 # dependencies used by the app
-pkg_dependencies="libtinfo5 unzip ca-certificates swig libpq-dev postgresql postgresql-contrib postgresql-common ffmpeg libimage-exiftool-perl curl libopenblas-dev libmagic1 libboost-all-dev libxrender-dev liblapack-dev git bzip2 cmake build-essential libsm6 libglib2.0-0 libgl1-mesa-glx gfortran gunicorn libheif-dev libssl-dev rustc liblzma-dev python3 python3-pip python3-venv imagemagick xsel nodejs npm redis-server libmagickwand-dev libldap2-dev libsasl2-dev libvips42"
+pkg_dependencies="libtinfo5 unzip ca-certificates swig libpq-dev postgresql postgresql-contrib postgresql-common ffmpeg libimage-exiftool-perl curl libopenblas-dev libmagic1 libboost-all-dev libxrender-dev liblapack-dev git bzip2 cmake build-essential libsm6 libglib2.0-0 libgl1-mesa-glx gfortran gunicorn libheif-dev libssl-dev rustc liblzma-dev python3 python3-pip python3-venv imagemagick xsel redis-server libmagickwand-dev libldap2-dev libsasl2-dev libvips42"
 
 nodejs_version="14"
 
@@ -116,9 +116,9 @@ function set_up_frontend {
 	pushd $final_path/frontend
 		chown -R $app:$app $frontend_path
 		chown -R $app:$app $data_path
-		export NODE_OPTIONS="--max-old-space-size=8192"
 		ynh_exec_warn_less ynh_exec_as $app $ynh_node_load_PATH $ynh_npm install --legacy-peer-deps
 		ynh_exec_warn_less ynh_exec_as $app $ynh_node_load_PATH $ynh_npm run build
+		ynh_exec_warn_less ynh_exec_as $app $ynh_node_load_PATH $ynh_npm add serve
 		chown -R root:root $frontend_path
 		chown -R root:root $data_path
 	popd
@@ -136,19 +136,18 @@ function add_configuations {
 }
 
 function upgrade_db {
-	pushd "$final_path/backend"
-		chown -R $app:$app "$final_path/backend"
-		chown -R $app:$app "/var/log/$app"
-		ynh_exec_warn_less ynh_exec_as $app bash -c "
-			set -a
-			export PATH=\"$path_prefix:"'$PATH'"\"
-			source \"$final_path\"/librephotos.env
-			python3 manage.py showmigrations
-			python3 manage.py migrate 
-			python3 manage.py showmigrations
-		"
-	popd
-	set_permissions
+chown -R $app:$app "$final_path/backend"
+chown -R $app:$app "/var/log/$app"
+ynh_exec_warn_less ynh_exec_as $app bash -c "
+	source \"$final_path/backend/venv/bin/activate\"
+	set -a
+	source \"$final_path/librephotos.env\"
+	cd \"$final_path/backend\"
+	python3 manage.py showmigrations
+	python3 manage.py migrate 
+	python3 manage.py showmigrations
+"
+set_permissions
 }
 
 function set_permissions {

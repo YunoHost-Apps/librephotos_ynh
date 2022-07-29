@@ -19,18 +19,20 @@ index 3449af1..f1a6be7 100644
  
  CORS_ALLOW_HEADERS = (
      "cache-control",
-@@ -94,7 +95,9 @@
+@@ -94,7 +95,11 @@
      "x-requested-with",
  )
  
 -CORS_ORIGIN_WHITELIST = ("http://localhost:3000", "http://192.168.1.100:3000")
 +BACKEND_PORT=os.environ['httpPort']
 +
-+CORS_ORIGIN_WHITELIST = ('http://localhost:' + BACKEND_PORT)
++CORS_ORIGIN_WHITELIST = [
++    'http://localhost:' + BACKEND_PORT,
++]
  
  REST_FRAMEWORK = {
      "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
-@@ -219,7 +222,7 @@
+@@ -219,7 +224,7 @@
  
  LANGUAGE_CODE = "en-us"
  
@@ -39,7 +41,7 @@ index 3449af1..f1a6be7 100644
  
  USE_I18N = True
  
-@@ -258,8 +261,8 @@
+@@ -258,8 +263,8 @@
  CORS_ORIGIN_ALLOW_ALL = False
  CORS_ALLOW_CREDENTIALS = True
  
@@ -50,7 +52,7 @@ index 3449af1..f1a6be7 100644
  
  # Must be less or egal of nb core CPU ( Nearly 2GB per process)
  HEAVYWEIGHT_PROCESS_ENV = os.environ.get("HEAVYWEIGHT_PROCESS", "1")
-@@ -282,3 +285,12 @@
+@@ -282,3 +287,12 @@
          },
      },
  }

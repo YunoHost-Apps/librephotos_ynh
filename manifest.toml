@@ -1,3 +1,5 @@
+#:schema https://raw.githubusercontent.com/YunoHost/apps/master/schemas/manifest.v2.schema.json
+
 packaging_format = 2
 
 id = "librephotos"
@@ -12,7 +14,7 @@ maintainers = ["Jules Bertholet"]
 [upstream]
 license = "MIT"
 website = "https://librephotos.com"
-demo = "https://demo2.librephotos.com (user: demo, password: demo1234)"
+demo = "<https://demo2.librephotos.com> (user: demo, password: demo1234)"
 admindoc = "https://docs.librephotos.com"
 userdoc = "https://github.com/LibrePhotos/librephotos"
 code = "https://github.com/LibrePhotos/librephotos"

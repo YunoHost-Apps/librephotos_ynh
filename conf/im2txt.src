@@ -1,7 +1,0 @@
-SOURCE_URL=https://github.com/LibrePhotos/librephotos-docker/releases/download/0.1/im2txt.tar.gz
-SOURCE_SUM=980670c0365c0e32b5fecfc0907bfee4742bcd6a40e0d6ac5692c69bbd49ccc4
-SOURCE_SUM_PRG=sha256sum
-SOURCE_FORMAT=tar.gz
-SOURCE_IN_SUBDIR=true
-SOURCE_FILENAME=im2txt.tar.gz
-SOURCE_EXTRACT=true

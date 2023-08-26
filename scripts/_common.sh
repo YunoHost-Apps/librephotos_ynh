@@ -4,27 +4,20 @@
 # COMMON VARIABLES
 #=================================================
 
-# dependencies used by the app
-pkg_dependencies="libtinfo5 unzip ca-certificates swig libpq-dev postgresql postgresql-contrib postgresql-common ffmpeg libimage-exiftool-perl curl libopenblas-dev libmagic1 libboost-all-dev libxrender-dev liblapack-dev git bzip2 cmake build-essential libsm6 libglib2.0-0 libgl1-mesa-glx gfortran gunicorn libheif-dev libssl-dev rustc liblzma-dev python3 python3-pip python3-venv imagemagick xsel nodejs npm redis-server libmagickwand-dev libldap2-dev libsasl2-dev"
-
 arch="$(dpkg --print-architecture)"
 arm64_test=0
-
-if ! (apt-cache -q=0 show ufraw-batch |& grep ': No packages found' &>/dev/null); then
-	pkg_dependencies="$pkg_dependencies ufraw-batch"
-fi
 
 #=================================================
 # PERSONAL HELPERS
 #=================================================
 
 function unpack_source {
-	ynh_secure_remove "$final_path"
-	mkdir -p "$final_path/data_models/"{places365,im2txt}
-	ynh_setup_source --source_id="places365" --dest_dir="$final_path/data_models/places365/"
-	ynh_setup_source --source_id="im2txt" --dest_dir="$final_path/data_models/im2txt/"
+	ynh_secure_remove "$install_dir"
+	mkdir -p "$install_dir/data_models/"{places365,im2txt}
+	ynh_setup_source --source_id="places365" --dest_dir="$install_dir/data_models/places365/"
+	ynh_setup_source --source_id="im2txt" --dest_dir="$install_dir/data_models/im2txt/"
 	mkdir -p "$data_path"
-	ln -sf "$final_path/data_models" "$data_path/data_models"
+	ln -sf "$install_dir/data_models" "$data_path/data_models"
 	mkdir -p "$data_path/protected_media/"{thumbnails_big,square_thumbnails,square_thumbnails_small,faces}
 	mkdir -p "$data_path/data/nextcloud_media"
 	mkdir -p "$data_path/matplotlib"
@@ -32,27 +25,27 @@ function unpack_source {
 	mkdir -p ~/.cache/torch/hub/checkpoints/
 	ynh_setup_source --source_id="resnet152-b121ed2d" --dest_dir="/root/.cache/torch/hub/checkpoints/"
 
-	ynh_setup_source --source_id="backend" --dest_dir="$final_path/backend/"
-	ynh_setup_source --source_id="frontend" --dest_dir="$final_path/frontend/"
-	ynh_setup_source --source_id="dlib" --dest_dir="$final_path/backend/dlib/"
+	ynh_setup_source --source_id="backend" --dest_dir="$install_dir/backend/"
+	ynh_setup_source --source_id="frontend" --dest_dir="$install_dir/frontend/"
+	ynh_setup_source --source_id="dlib" --dest_dir="$install_dir/backend/dlib/"
 	if [ "$arch" = "arm64" ] || [ "$arm64_test" -eq 1 ]; then
-		export CONDA_DIR="$final_path/backend/conda"
+		export CONDA_DIR="$install_dir/backend/conda"
 		mkdir -p "$CONDA_DIR"
 		if [ "$arch" = "arm64" ]; then
 			ynh_setup_source --source_id="miniforge3" --dest_dir="$CONDA_DIR"
-			ynh_setup_source --source_id="cmake" --dest_dir="$final_path/backend/cmake/"
+			ynh_setup_source --source_id="cmake" --dest_dir="$install_dir/backend/cmake/"
 		else
 			wget -O "${CONDA_DIR}/Miniforge3-4.10.1-4-Linux-aarch64.sh" https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh 2>&1
-			ynh_setup_source --source_id="cmake_amd64" --dest_dir="$final_path/backend/cmake/"
+			ynh_setup_source --source_id="cmake_amd64" --dest_dir="$install_dir/backend/cmake/"
 		fi
-			#ynh_setup_source --source_id="faiss" --dest_dir="$final_path/backend/faiss/"
+			#ynh_setup_source --source_id="faiss" --dest_dir="$install_dir/backend/faiss/"
 	fi
 
 	mkdir -p "/var/log/$app"
 }
 
 function set_up_backend {
-	backend_path="$final_path/backend"
+	backend_path="$install_dir/backend"
 	pushd "$backend_path"
 		chown -R $app:$app "$backend_path"
 		sudo -u $app python3 -m venv $backend_path/venv
@@ -111,8 +104,8 @@ function set_node_vars {
 
 function set_up_frontend {
 	set_node_vars
-	frontend_path=$final_path/frontend
-	pushd $final_path/frontend
+	frontend_path=$install_dir/frontend
+	pushd $install_dir/frontend
 		chown -R $app:$app $frontend_path
 		sudo -u $app touch $frontend_path/.yarnrc
 		sudo -u $app env "PATH=$node_PATH" yarn --cache-folder $frontend_path/yarn-cache --use-yarnrc $frontend_path/.yarnrc install 2>&1
@@ -122,7 +115,7 @@ function set_up_frontend {
 	popd
 }
 
-function add_configuations {
+function add_configurations {
 	secret_key=$(ynh_app_setting_get --app=$app --key=secret_key)
 
 	if [ -z $secret_key ]; then
@@ -130,19 +123,19 @@ function add_configuations {
 		ynh_app_setting_set --app=$app --key=secret_key --value=$secret_key
 	fi
 
-	ynh_add_config --template="librephotos.env" --destination="$final_path/librephotos.env"
+	ynh_add_config --template="librephotos.env" --destination="$install_dir/librephotos.env"
 }
 
 function upgrade_db {
-	pushd "$final_path/backend"
-		chown -R $app:$app "$final_path/backend"
+	pushd "$install_dir/backend"
+		chown -R $app:$app "$install_dir/backend"
 		chown -R $app:$app "/var/log/$app"
 		sudo -u $app bash -c "
 			set -a
 			export PATH=\"$path_prefix:"'$PATH'"\"
-			source \"$final_path\"/librephotos.env
+			source \"$install_dir\"/librephotos.env
 			python3 manage.py showmigrations
-			python3 manage.py migrate 
+			python3 manage.py migrate
 			python3 manage.py showmigrations
 		" 2>&1
 	popd
@@ -150,11 +143,11 @@ function upgrade_db {
 }
 
 function set_permissions {
-	chown -R root:$app "$final_path"
-	chmod -R g=u,g-w,o-rwx "$final_path"
+	chown -R root:$app "$install_dir"
+	chmod -R g=u,g-w,o-rwx "$install_dir"
 	chown -R $app:$app "$data_path"
 	chmod -R g=u,g-w,o-rwx "$data_path"
-	chown -R $app:$app "$final_path/data_models"
+	chown -R $app:$app "$install_dir/data_models"
 	chown -R $app:$app "/var/log/$app"
 	chmod -R g-w,o-rwx "/var/log/$app"
 	setfacl -n -m user:www-data:rx "$data_path"

@@ -9,85 +9,13 @@
 source _common.sh
 source /usr/share/yunohost/helpers
 
-#=================================================
-# MANAGE SCRIPT FAILURE
-#=================================================
-ynh_clean_setup () {
-	ynh_clean_check_starting
-}
-# Exit if an error occurs during the execution of the script
-ynh_abort_if_errors
 
-#=================================================
-# RETRIEVE ARGUMENTS FROM THE MANIFEST
-#=================================================
-
-domain=$YNH_APP_ARG_DOMAIN
-path_url="/"
-admin=$YNH_APP_ARG_ADMIN
-is_public=$YNH_APP_ARG_IS_PUBLIC
-allow_multimedia_write=$YNH_APP_ARG_ALLOW_MULTIMEDIA_WRITE
-app=$YNH_APP_INSTANCE_NAME
-
-#=================================================
-# CHECK IF THE APP CAN BE INSTALLED WITH THESE ARGS
-#=================================================
-ynh_script_progression --message="Validating installation parameters..." --weight=1
-
-final_path=/opt/yunohost/$app
-test ! -e "$final_path" || ynh_die --message="This path already contains a folder"
-ynh_app_setting_set --app=$app --key=final_path --value="$final_path"
-
-data_path=/home/yunohost.app/$app
-test ! -e "$data_path" || ynh_die --message="This path already contains a folder"
-ynh_app_setting_set --app=$app --key=data_path --value="$data_path"
-
-# Register (book) web path
-ynh_webpath_register --app=$app --domain=$domain --path_url=$path_url
-
-#=================================================
-# STORE SETTINGS FROM MANIFEST
-#=================================================
-ynh_script_progression --message="Storing installation settings..." --weight=1
-
-ynh_app_setting_set --app=$app --key=domain --value=$domain
-ynh_app_setting_set --app=$app --key=path --value=$path_url
-ynh_app_setting_set --app=$app --key=admin --value=$admin
-ynh_app_setting_set --app=$app --key=allow_multimedia_write --value=$allow_multimedia_write
+# Might not be required
+path="/"
 
 #=================================================
 # STANDARD MODIFICATIONS
 #=================================================
-# FIND PORTS
-#=================================================
-ynh_script_progression --message="Finding available ports..." --weight=1
-
-# Find an available port
-port=$(ynh_find_port --port=3000)
-ynh_app_setting_set --app=$app --key=port --value=$port
-backend_port=$(ynh_find_port --port=8001)
-ynh_app_setting_set --app=$app --key=backend_port --value=$backend_port
-similarity_port=$(ynh_find_port --port=$(expr $backend_port + 1))
-ynh_app_setting_set --app=$app --key=similarity_port --value=$similarity_port
-
-#=================================================
-# INSTALL DEPENDENCIES
-#=================================================
-ynh_script_progression --message="Installing dependencies..." --weight=5
-
-ynh_install_app_dependencies $pkg_dependencies
-ynh_install_extra_app_dependencies --repo="deb https://dl.yarnpkg.com/debian/ stable main" --package="yarn" --key="https://dl.yarnpkg.com/debian/pubkey.gpg"
-
-#=================================================
-# CREATE A POSTGRESQL DATABASE
-#=================================================
-ynh_script_progression --message="Creating a PostgreSQL database..." --weight=1
-
-db_name=$(ynh_sanitize_dbid --db_name=$app)
-db_user=$db_name
-ynh_psql_test_if_first_run
-ynh_app_setting_set --app=$app --key=db_name --value=$db_name
-ynh_psql_setup_db --db_user=$db_user --db_name=$db_name
 
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
@@ -103,14 +31,6 @@ ynh_script_progression --message="Configuring NGINX web server..." --weight=1
 
 # Create a dedicated NGINX config
 ynh_add_nginx_config backend_port
-
-#=================================================
-# CREATE DEDICATED USER
-#=================================================
-ynh_script_progression --message="Configuring system user..." --weight=1
-
-# Create a system user
-ynh_system_user_create --username=$app --home_dir=$data_path
 
 #=================================================
 # SPECIFIC SETUP
@@ -134,17 +54,17 @@ set_up_frontend
 ynh_script_progression --message="Configuring systemd services..." --weight=1
 
 # Create dedicated systemd configs
-ynh_add_systemd_config --service=$app-backend --template=backend.service
-ynh_add_systemd_config --service=$app-frontend --template=frontend.service
-ynh_add_systemd_config --service=$app-image-similarity --template=image-similarity.service
-ynh_add_systemd_config --service=$app-worker --template=worker.service
+ynh_add_systemd_config --service="$app-backend"          --template=backend.service
+ynh_add_systemd_config --service="$app-frontend"         --template=frontend.service
+ynh_add_systemd_config --service="$app-image-similarity" --template=image-similarity.service
+ynh_add_systemd_config --service="$app-worker"           --template=worker.service
 
 #=================================================
 # ADD CONFIGURATIONS
 #=================================================
 ynh_script_progression --message="Generating configuration files..." --weight=1
 
-add_configuations
+add_configurations
 
 #=================================================
 # FINALIZE DATABASE
@@ -153,22 +73,22 @@ ynh_script_progression --message="Finalizing database..." --weight=1
 
 upgrade_db
 
-pushd "$final_path/backend"
-	admin_mail="$(ynh_user_get_info $admin 'mail')"
-	sudo -u $app bash -c "
-		set -a
-		export PATH=\"$path_prefix:"'$PATH'"\"
-		source \"$final_path\"/librephotos.env
-		python3 manage.py createsuperuser --noinput --username \"$admin\" --email \"$admin_mail\"
-	" 2>&1
-	for user in $(ynh_user_list); do
-		mail=$(ynh_user_get_info --username="$user" --key=mail)
-		sudo -u $app bash -c "
-			set -a
-			export PATH=\"$path_prefix:"'$PATH'"\"
-			source \"$final_path\"/librephotos.env
-			python3 manage.py shell 
-		" <<< "
+pushd "$install_dir/backend"
+    admin_mail="$(ynh_user_get_info $admin 'mail')"
+    sudo -u $app bash -c "
+        set -a
+        export PATH=\"$path_prefix:"'$PATH'"\"
+        source \"$install_dir\"/librephotos.env
+        python3 manage.py createsuperuser --noinput --username \"$admin\" --email \"$admin_mail\"
+    " 2>&1
+    for user in $(ynh_user_list); do
+        mail=$(ynh_user_get_info --username="$user" --key=mail)
+        sudo -u $app bash -c "
+            set -a
+            export PATH=\"$path_prefix:"'$PATH'"\"
+            source \"$install_dir\"/librephotos.env
+            python3 manage.py shell
+        " <<< "
 from django.contrib.auth import get_user_model
 User = get_user_model()
 try:
@@ -178,7 +98,7 @@ try:
 except User.DoesNotExist:
     User.objects.create_user('$user', email='$mail', scan_directory='/home/yunohost.multimedia/$user/Picture')
 " 2>&1
-	done
+    done
 popd
 
 #=================================================
@@ -188,8 +108,8 @@ ynh_script_progression --message="Adding multimedia directories..." --weight=1
 
 # Build YunoHost multimedia directories
 ynh_multimedia_build_main_dir
-if [ $allow_multimedia_write -eq 1 ]; then
-	ynh_multimedia_addaccess $app
+if [ "$allow_multimedia_write" -eq 1 ]; then
+    ynh_multimedia_addaccess $app
 fi
 
 #=================================================
@@ -230,26 +150,6 @@ ynh_systemd_action --service_name=$app-frontend --action="start" --log_path="sys
 ynh_systemd_action --service_name=$app-image-similarity --action="start" --log_path="/var/log/$app/image_similarity.log"
 ynh_systemd_action --service_name=$app-worker --action="start" --log_path="/var/log/$app/$app-worker.log"
 
-
-#=================================================
-# SETUP SSOWAT
-#=================================================
-ynh_script_progression --message="Configuring permissions..." --weight=1
-
-# Make app public if necessary
-if [ $is_public -eq 1 ]
-then
-	# Everyone can access the app.
-	# The "main" permission is automatically created before the install script.
-	ynh_permission_update --permission="main" --add="visitors"
-fi
-
-#=================================================
-# RELOAD NGINX
-#=================================================
-ynh_script_progression --message="Reloading NGINX web server..." --weight=1
-
-ynh_systemd_action --service_name=nginx --action=reload
 
 #=================================================
 # END OF SCRIPT

@@ -16,7 +16,6 @@ license = "MIT"
 website = "https://librephotos.com"
 demo = "<https://demo2.librephotos.com> (user: demo, password: demo1234)"
 admindoc = "https://docs.librephotos.com"
-userdoc = "https://github.com/LibrePhotos/librephotos"
 code = "https://github.com/LibrePhotos/librephotos"
 fund = "https://www.paypal.com/donate/?hosted_button_id=5JWVM2UR4LM96"
 
@@ -158,7 +157,7 @@ ram.runtime = "50M"
     fi
     """
 
-    [[resources.apt.extras]]
+    [resources.apt.extras.yarn]
     repo = "deb https://dl.yarnpkg.com/debian/ stable main"
     key = "https://dl.yarnpkg.com/debian/pubkey.gpg"
     packages = "yarn"

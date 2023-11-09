@@ -20,4 +20,3 @@ test_format = 1.0
     # -------------------------------
 
     test_upgrade_from.3b5b527e.name = "Upgrade from March 29"
-    test_upgrade_from.3b5b527e.args.foo = "bar"

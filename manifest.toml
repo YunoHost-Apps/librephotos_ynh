@@ -59,7 +59,7 @@ ram.runtime = "50M"
         [resources.sources.resnet152-b121ed2d]
         url = "https://download.pytorch.org/models/resnet152-b121ed2d.pth"
         sha256 = "b121ed2db97ec7e9f55a91300ceaf85a326de955e8a4ae09e3a0c8170d27f14f"
-        format = "tar"
+        format = "tar.gz" # FIXME: This is actually a tar
         rename = "resnet152-b121ed2d.pth"
 
         [resources.sources.backend]

@@ -16,11 +16,11 @@ function unpack_source {
 	mkdir -p "$install_dir/data_models/"{places365,im2txt}
 	ynh_setup_source --source_id="places365" --dest_dir="$install_dir/data_models/places365/"
 	ynh_setup_source --source_id="im2txt" --dest_dir="$install_dir/data_models/im2txt/"
-	mkdir -p "$data_path"
-	ln -sf "$install_dir/data_models" "$data_path/data_models"
-	mkdir -p "$data_path/protected_media/"{thumbnails_big,square_thumbnails,square_thumbnails_small,faces}
-	mkdir -p "$data_path/data/nextcloud_media"
-	mkdir -p "$data_path/matplotlib"
+	mkdir -p "$data_dir"
+	ln -sf "$install_dir/data_models" "$data_dir/data_models"
+	mkdir -p "$data_dir/protected_media/"{thumbnails_big,square_thumbnails,square_thumbnails_small,faces}
+	mkdir -p "$data_dir/data/nextcloud_media"
+	mkdir -p "$data_dir/matplotlib"
 
 	mkdir -p ~/.cache/torch/hub/checkpoints/
 	ynh_setup_source --source_id="resnet152-b121ed2d" --dest_dir="/root/.cache/torch/hub/checkpoints/"
@@ -145,13 +145,13 @@ function upgrade_db {
 function set_permissions {
 	chown -R root:$app "$install_dir"
 	chmod -R g=u,g-w,o-rwx "$install_dir"
-	chown -R $app:$app "$data_path"
-	chmod -R g=u,g-w,o-rwx "$data_path"
+	chown -R $app:$app "$data_dir"
+	chmod -R g=u,g-w,o-rwx "$data_dir"
 	chown -R $app:$app "$install_dir/data_models"
 	chown -R $app:$app "/var/log/$app"
 	chmod -R g-w,o-rwx "/var/log/$app"
-	setfacl -n -m user:www-data:rx "$data_path"
-	setfacl -nR -m u:www-data:rx -m d:u:www-data:rx "$data_path/protected_media" "$data_path/data" "$data_path/data/nextcloud_media"
+	setfacl -n -m user:www-data:rx "$data_dir"
+	setfacl -nR -m u:www-data:rx -m d:u:www-data:rx "$data_dir/protected_media" "$data_dir/data" "$data_dir/data/nextcloud_media"
 }
 
 function set_up_logrotate {

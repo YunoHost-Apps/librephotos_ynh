@@ -1,61 +1,68 @@
+From 865d32e99cb323ef853f6592c69f793e70d68a97 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?F=C3=A9lix=20Pi=C3=A9dallu?= <felix@piedallu.me>
+Date: Sun, 3 Dec 2023 12:25:24 +0100
+Subject: [PATCH] Patches for yunohost
+
+---
+ ownphotos/settings.py | 26 ++++++++++++++++++++++----
+ 1 file changed, 22 insertions(+), 4 deletions(-)
+
 diff --git a/ownphotos/settings.py b/ownphotos/settings.py
-index 3449af1..f1a6be7 100644
+index 9cc2eb6..23b7287 100644
 --- a/ownphotos/settings.py
 +++ b/ownphotos/settings.py
-@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
+@@ -11,10 +11,12 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
  """
  import datetime
  import os
 +import ldap, tzlocal
  
  for envvar in (
-     'SECRET_KEY',
-@@ -76,7 +77,7 @@ CONSTANCE_CONFIG = {
-     'IMAGE_DIRS': ("/data", 'Image dirs list (serialized json)', str)
+     "SECRET_KEY",
+     "BACKEND_HOST",
++    "BACKEND_PORT",
+     "DB_BACKEND",
+     "DB_NAME",
+     "DB_USER",
+@@ -77,7 +79,7 @@ CONSTANCE_CONFIG = {
+     "IMAGE_DIRS": ("/data", "Image dirs list (serialized json)", str),
  }
  
--INTERNAL_IPS = ('127.0.0.1', 'localhost', '192.168.1.100')
-+INTERNAL_IPS = ('127.0.0.1', 'localhost')
+-INTERNAL_IPS = ("127.0.0.1", "localhost", "192.168.1.100")
++INTERNAL_IPS = ("127.0.0.1", "localhost")
  
  CORS_ALLOW_HEADERS = (
-     'cache-control',
-@@ -93,10 +94,11 @@ CORS_ALLOW_HEADERS = (
-     'x-requested-with',
+     "cache-control",
+@@ -94,7 +96,8 @@ CORS_ALLOW_HEADERS = (
+     "x-requested-with",
  )
  
--CORS_ORIGIN_WHITELIST = (
--    'http://localhost:3000',
--    'http://192.168.1.100:3000'
--)
-+BACKEND_PORT=os.environ['httpPort']
-+
-+CORS_ORIGIN_WHITELIST = [
-+    'http://localhost:'  + BACKEND_PORT
-+]
+-CORS_ORIGIN_WHITELIST = ("http://localhost:3000", "http://192.168.1.100:3000")
++BACKEND_PORT = os.environ["HTTP_PORT"]
++CORS_ORIGIN_WHITELIST = (f"http://localhost:{BACKEND_PORT}", )
  
  REST_FRAMEWORK = {
-     'DEFAULT_PERMISSION_CLASSES': (
-@@ -231,7 +233,7 @@ AUTH_PASSWORD_VALIDATORS = [
+     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+@@ -219,7 +222,7 @@ AUTH_PASSWORD_VALIDATORS = [
  
- LANGUAGE_CODE = 'en-us'
+ LANGUAGE_CODE = "en-us"
  
--TIME_ZONE = os.environ['TIME_ZONE']
+-TIME_ZONE = os.environ["TIME_ZONE"]
 +TIME_ZONE = tzlocal.get_localzone().zone
  
  USE_I18N = True
  
-@@ -267,8 +269,8 @@ FULLPHOTO_SIZE = (1000, 1000)
+@@ -258,7 +261,8 @@ DEFAULT_FAVORITE_MIN_RATING = os.environ.get("DEFAULT_FAVORITE_MIN_RATING", 4)
  CORS_ORIGIN_ALLOW_ALL = False
  CORS_ALLOW_CREDENTIALS = True
  
--IMAGE_SIMILARITY_SERVER = 'http://localhost:8002'
--
+-IMAGE_SIMILARITY_SERVER = "http://localhost:8002"
 +IMAGE_SIMILARITY_SERVER_PORT=os.environ['IMAGE_SIMILARITY_SERVER_PORT']
 +IMAGE_SIMILARITY_SERVER = 'http://localhost:' + IMAGE_SIMILARITY_SERVER_PORT
  
- #Must be less or egal of nb core CPU ( Nearly 2GB per process)
- HEAVYWEIGHT_PROCESS_ENV = os.environ.get('HEAVYWEIGHT_PROCESS', '1')
-@@ -289,3 +291,12 @@ LOGGING = {
+ 
+ # Must be less or egal of nb core CPU ( Nearly 2GB per process)
+@@ -282,3 +286,17 @@ LOGGING = {
          },
      },
  }
@@ -67,4 +74,12 @@ index 3449af1..f1a6be7 100644
 +
 +AUTH_LDAP_USER_DN_TEMPLATE = "uid=%(user)s,ou=users,dc=yunohost,dc=org"
 +
-+AUTH_LDAP_USER_ATTR_MAP = {"username": "uid", "first_name": "givenName", "email": "mail", "last_name": "sn"}
++AUTH_LDAP_USER_ATTR_MAP = {
++    "username": "uid",
++    "first_name": "givenName",
++    "email": "mail",
++    "last_name": "sn"
++}
+-- 
+2.43.0
+

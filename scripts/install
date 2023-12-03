@@ -10,7 +10,7 @@ source _common.sh
 source /usr/share/yunohost/helpers
 
 
-# Might not be required
+#FIXME: Might not be required
 path="/"
 
 #=================================================
@@ -30,7 +30,7 @@ unpack_source
 ynh_script_progression --message="Configuring NGINX web server..." --weight=1
 
 # Create a dedicated NGINX config
-ynh_add_nginx_config backend_port
+ynh_add_nginx_config
 
 #=================================================
 # SPECIFIC SETUP

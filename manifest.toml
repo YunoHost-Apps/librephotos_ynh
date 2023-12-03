@@ -107,9 +107,6 @@ ram.runtime = "50M"
     backend.default = 8001
     similarity.default = 8002
 
-    [resources.database]
-    type = "postgresql"
-
     [resources.apt]
     packages = [
         "curl", "unzip",
@@ -149,7 +146,6 @@ ram.runtime = "50M"
         "libmagickwand-dev",
         "libldap2-dev",
         "libsasl2-dev",
-        "postgresql",
     ]
 
     packages_from_raw_bash = """
@@ -162,3 +158,6 @@ ram.runtime = "50M"
     repo = "deb https://dl.yarnpkg.com/debian/ stable main"
     key = "https://dl.yarnpkg.com/debian/pubkey.gpg"
     packages = "yarn"
+
+    [resources.database]
+    type = "postgresql"

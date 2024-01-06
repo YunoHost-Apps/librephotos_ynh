@@ -1,0 +1,22 @@
+#:schema https://raw.githubusercontent.com/YunoHost/apps/master/schemas/tests.v1.schema.json
+
+test_format = 1.0
+
+[default]
+
+    # ------------
+    # Tests to run
+    # ------------
+
+
+    # -------------------------------
+    # Default args to use for install
+    # -------------------------------
+
+    args.allow_multimedia_write = 1
+
+    # -------------------------------
+    # Commits to test upgrade from
+    # -------------------------------
+
+    test_upgrade_from.3b5b527e.name = "Upgrade from March 29"

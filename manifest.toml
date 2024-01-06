@@ -1,0 +1,163 @@
+#:schema https://raw.githubusercontent.com/YunoHost/apps/master/schemas/manifest.v2.schema.json
+
+packaging_format = 2
+
+id = "librephotos"
+name = "Librephotos"
+description.en = "Photo viewer and manager similar to Google Photos"
+description.fr = "Gestionnaire de photos semblable à Google Photos"
+
+version = "0.2021.36~ynh1"
+
+maintainers = ["Jules Bertholet"]
+
+[upstream]
+license = "MIT"
+website = "https://librephotos.com"
+demo = "<https://demo2.librephotos.com> (user: demo, password: demo1234)"
+admindoc = "https://docs.librephotos.com"
+code = "https://github.com/LibrePhotos/librephotos"
+fund = "https://www.paypal.com/donate/?hosted_button_id=5JWVM2UR4LM96"
+
+[integration]
+yunohost = ">= 11.2"
+architectures = "all"
+multi_instance = false
+ldap = false
+sso = false
+disk = "50M"
+ram.build = "50M"
+ram.runtime = "50M"
+
+[install]
+    [install.domain]
+    type = "domain"
+
+    [install.admin]
+    type = "user"
+
+    [install.init_main_permission]
+    type = "group"
+    default = "visitors"
+
+    [install.allow_multimedia_write]
+    ask.en = "Allow write access to multimedia directories?"
+    ask.fr = "Autoriser la modification des fichiers dans les dossiers multimédia ?"
+    type = "boolean"
+    default = false
+
+[resources]
+    [resources.sources]
+        [resources.sources.cmake]
+        url = "https://github.com/Kitware/CMake/releases/download/v3.20.3/cmake-3.20.3-linux-aarch64.tar.gz"
+        sha256 = "77620f99e9d5f39cf4a49294c6a68c89a978ecef144894618974b9958efe3c2a"
+
+        [resources.sources.im2txt]
+        url = "https://github.com/LibrePhotos/librephotos-docker/releases/download/0.1/im2txt.tar.gz"
+        sha256 = "980670c0365c0e32b5fecfc0907bfee4742bcd6a40e0d6ac5692c69bbd49ccc4"
+
+        [resources.sources.resnet152-b121ed2d]
+        url = "https://download.pytorch.org/models/resnet152-b121ed2d.pth"
+        sha256 = "b121ed2db97ec7e9f55a91300ceaf85a326de955e8a4ae09e3a0c8170d27f14f"
+        format = "tar.gz" # FIXME: This is actually a tar
+        rename = "resnet152-b121ed2d.pth"
+
+        [resources.sources.backend]
+        url = "https://github.com/LibrePhotos/librephotos/tarball/11c6994d3c506d835335f596090a13545d72713a"
+        sha256 = "0e588d7ed34fa826e8beba3894586b16bb247b00548215190732a1cbec57167b"
+
+        [resources.sources.frontend]
+        url = "https://github.com/LibrePhotos/librephotos-frontend/tarball/37963756369f11617c456a56f6850b2e8aaf8358"
+        sha256 = "085b62550214bd9ffecfefde802b96f3542e6867bb25ff1a830623b598e4c61d"
+
+        [resources.sources.dlib]
+        url = "https://github.com/davisking/dlib/archive/refs/tags/v19.22.tar.gz"
+        sha256 = "5f44b67f762691b92f3e41dcf9c95dd0f4525b59cacb478094e511fdacb5c096"
+
+        [resources.sources.places365]
+        url = "https://github.com/LibrePhotos/librephotos-docker/releases/download/0.1/places365.tar.gz"
+        sha256 = "27792ffcd1f6a4de7abebdea046dda0916f9cd12eba7bed7b5f51f120f91f0d8"
+
+        [resources.sources.faiss]
+        url = "https://github.com/facebookresearch/faiss/archive/refs/tags/v1.7.1.tar.gz"
+        sha256 = "d676d3107ad41203a49e0afda2630519299dc8666f8d23322cbe1eac0c431871"
+
+        [resources.sources.cmake_amd64]
+        url = "https://github.com/Kitware/CMake/releases/download/v3.20.3/cmake-3.20.3-linux-x86_64.tar.gz"
+        sha256 = "97bf730372f9900b2dfb9206fccbcf92f5c7f3b502148b832e77451aa0f9e0e6"
+
+        [resources.sources.miniforge3]
+        url = "https://github.com/conda-forge/miniforge/releases/download/4.10.1-4/Miniforge3-4.10.1-4-Linux-aarch64.sh"
+        sha256 = "68f11be0b8272b9218f62fa3ba1b7c58783427e65db7b7ba77e7cdf91f099540"
+        format = "whatever"
+        rename = "Miniforge3-4.10.1-4-Linux-aarch64.sh"
+
+
+    [resources.system_user]
+
+    [resources.install_dir]
+
+    [resources.data_dir]
+
+    [resources.permissions]
+    main.url = "/"
+
+    [resources.ports]
+    main.default = 3000
+    backend.default = 8001
+    similarity.default = 8002
+
+    [resources.apt]
+    packages = [
+        "curl", "unzip",
+        "git",
+        "bzip2",
+        "build-essential",
+        "libtinfo5",
+        "ca-certificates",
+        "swig",
+        "libpq-dev",
+        "postgresql", "postgresql-contrib", "postgresql-common",
+        "ffmpeg",
+        "libimage-exiftool-perl",
+        "libopenblas-dev",
+        "libmagic1",
+        "libboost-all-dev",
+        "libxrender-dev",
+        "liblapack-dev",
+        "cmake",
+        "libsm6",
+        "libglib2.0-0",
+        "libgl1-mesa-glx",
+        "gfortran",
+        "gunicorn",
+        "libheif-dev",
+        "libssl-dev",
+        "rustc",
+        "liblzma-dev",
+        "python3",
+        "python3-pip",
+        "python3-venv",
+        "imagemagick",
+        "xsel",
+        "nodejs",
+        "npm",
+        "redis-server",
+        "libmagickwand-dev",
+        "libldap2-dev",
+        "libsasl2-dev",
+    ]
+
+    packages_from_raw_bash = """
+    if ! (apt-cache -q=0 show ufraw-batch |& grep ': No packages found' &>/dev/null); then
+        echo ufraw-batch
+    fi
+    """
+
+    [resources.apt.extras.yarn]
+    repo = "deb https://dl.yarnpkg.com/debian/ stable main"
+    key = "https://dl.yarnpkg.com/debian/pubkey.gpg"
+    packages = "yarn"
+
+    [resources.database]
+    type = "postgresql"

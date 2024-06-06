@@ -1,7 +1,0 @@
-SOURCE_URL=https://github.com/davisking/dlib/archive/refs/tags/v19.22.tar.gz
-SOURCE_SUM=5f44b67f762691b92f3e41dcf9c95dd0f4525b59cacb478094e511fdacb5c096
-SOURCE_SUM_PRG=sha256sum
-SOURCE_FORMAT=tar.gz
-SOURCE_IN_SUBDIR=true
-SOURCE_FILENAME=v19.22.tar.gz
-SOURCE_EXTRACT=true

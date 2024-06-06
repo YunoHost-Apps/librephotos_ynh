@@ -5,9 +5,9 @@ Documentation=https://github.com/LibrePhotos/librephotos
 [Service]
 User=__APP__
 Group=__APP__ 
-EnvironmentFile=__FINALPATH__/librephotos.env
+EnvironmentFile=__INSTALL_DIR__/librephotos.env
 ExecStart=/usr/bin/env bash -c "PATH=__PATH_PREFIX__:$PATH  ./node_modules/.bin/serve build -d -l $httpPort"
-WorkingDirectory=__FINALPATH__/frontend
+WorkingDirectory=__INSTALL_DIR__/frontend
 StandardOutput=append:/var/log/__APP__/__APP__-frontend.log
 StandardError=inherit
 

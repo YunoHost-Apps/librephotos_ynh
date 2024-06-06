@@ -7,9 +7,9 @@ After=network.target
 [Service]
 User=__APP__
 Group=__APP__ 
-EnvironmentFile=__FINALPATH__/librephotos.env
+EnvironmentFile=__INSTALL_DIR__/librephotos.env
 ExecStart=/usr/bin/env bash -c "PATH=__PATH_PREFIX__:$PATH python3 image_similarity/main.py"
-WorkingDirectory=__FINALPATH__/backend
+WorkingDirectory=__INSTALL_DIR__/backend
 StandardOutput=append:/var/log/__APP__/__APP__-image-similarity.log
 StandardError=inherit
 
